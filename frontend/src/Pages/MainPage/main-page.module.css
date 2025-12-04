@@ -1,6 +1,3 @@
-/* ===================== */
-/* GLOBAL WRAPPER */
-/* ===================== */
 .wrapper {
   position: relative;
   width: 100%;
@@ -8,16 +5,13 @@
   overflow: hidden;
 }
 
-/* ===================== */
-/* BIG BACKGROUND ITAM */
-/* ===================== */
 .backgroundText {
   position: absolute;
   top: -10vh;
   left: 0;
 
   display: flex;
-  gap: 2rem; /* расстояние между буквами */
+  gap: 2rem;
 
   font-family: "Inter", sans-serif;
   font-style: italic;
@@ -31,15 +25,13 @@
   white-space: nowrap;
 }
 .letter {
-  opacity: 0; /* скрыто до анимации */
+  opacity: 0; 
 }
 
-/* Появление букв по очереди */
 .animateLetter {
   animation: typewriter 0.6s ease forwards;
 }
 
-/* Задержки по буквам (I, T, A, M) */
 .animateLetter:nth-child(1) { animation-delay: 0.2s; }
 .animateLetter:nth-child(2) { animation-delay: 0.5s; }
 .animateLetter:nth-child(3) { animation-delay: 0.8s; }
@@ -50,14 +42,10 @@
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* ===================== */
-/* FADE-UP ДЛЯ ОСНОВНОГО ТЕКСТА */
-/* ===================== */
-
 .fadeUp {
   opacity: 0;
   animation: fadeUp 1s ease forwards;
-  animation-delay: 1.3s; /* после букв ITAM */
+  animation-delay: 1.3s; 
 }
 
 @keyframes fadeUp {
@@ -70,9 +58,7 @@
     transform: translateY(0);
   }
 }
-/* ===================== */
-/* CONTENT BLOCK */
-/* ===================== */
+
 .content {
   position: relative;
   z-index: 2;
@@ -81,23 +67,21 @@
   padding-top: clamp(20rem, 20vw, 22rem);
 }
 
-/* ===================== */
-/* MAIN TITLE */
-/* ===================== */
+
 .title {
   font-family: "Inter", sans-serif;
   font-weight: 800;
 
-  font-size: clamp(2.5rem, 7vw, 7rem); /* Масштабируем текст */
+  font-size: clamp(2.5rem, 7vw, 7rem); 
   color: #ffffff;
 
   margin: 0;
   line-height: 1.1;
 
-  white-space: nowrap; /* НЕ переносить строки */
+  white-space: nowrap;
 }
 
-/* Контейнер последней строки с кнопкой */
+
 .titleLine {
   display: flex;
   align-items: center;
@@ -106,9 +90,6 @@
   white-space: nowrap;
 }
 
-/* ===================== */
-/* BUTTON */
-/* ===================== */
 .buttons {
   display: flex;
   flex-direction: column;
@@ -117,7 +98,6 @@
   margin-right: 5rem;
 }
 
-/* Основная кнопка (заливка) */
 .buttonPrimary {
   width: 100%;
   display: block;
@@ -148,7 +128,6 @@
   transform: scale(0.97);
 }
 
-/* Кнопка-outline без заливки */
 .buttonOutline {
   width: 100%;
   display: block;
@@ -179,9 +158,6 @@
 .buttonOutline:active {
   transform: scale(0.97);
 }
-/* ===================== */
-/* RESPONSIVE FIXES */
-/* ===================== */
 
 @media (max-width: 768px) {
   .backgroundText {

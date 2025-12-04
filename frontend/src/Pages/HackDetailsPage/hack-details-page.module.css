@@ -1,0 +1,166 @@
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  padding: 4rem 5rem;
+  font-family: "Inter", sans-serif;
+  color: white;
+
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.container {
+  display: flex;
+  gap: 3rem;
+  align-items: flex-start;
+
+  animation: fadeUp 0.8s ease forwards;
+}
+
+.image {
+  width: 22rem;
+  height: 22rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  object-fit: cover;
+
+  animation: fadeLeft 0.8s ease forwards;
+}
+
+.info {
+  max-width: 60%;
+  opacity: 0;
+  animation: fadeRight 0.9s ease forwards;
+  animation-delay: 0.15s;
+}
+
+.title {
+  font-size: 3.2rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  font-size: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+.label span {
+  font-weight: 700;
+}
+
+.description {
+  font-size: 1.3rem;
+  line-height: 1.55;
+  margin-bottom: 2.5rem;
+}
+.description span {
+  font-weight: 700;
+  margin-right: 0.4rem;
+}
+
+.button {
+  width: 13rem;
+  padding: 0.8rem 1rem;
+  background: transparent;
+  border: 2px solid white;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+
+  opacity: 0;
+  animation: popIn 0.6s ease forwards;
+  animation-delay: 0.35s;
+}
+
+.button:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    align-items: center;
+    text-align: left;
+  }
+
+  .info {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .image {
+    width: 100%;
+    height: auto;
+    max-width: 28rem;
+  }
+
+  .title {
+    font-size: 2.4rem;
+    margin-top: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .wrapper {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .label,
+  .description {
+    font-size: 1.1rem;
+  }
+
+  .button {
+    width: 100%;
+    margin-top: 1rem;
+  }
+}

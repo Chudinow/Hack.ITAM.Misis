@@ -1,0 +1,100 @@
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  padding: 4rem 5rem;
+  font-family: "Inter", sans-serif;
+  color: white;
+}
+
+/* Заголовок */
+.title {
+  font-size: 5rem;
+  font-weight: 800;
+  margin-bottom: 4rem;
+}
+
+/* Контейнер карточек */
+.cards {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: nowrap; /* фиксируем 3 в строку */
+}
+
+/* Анимация появления */
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Карточка */
+.card {
+  width: 28rem;
+  height: fit-content;
+  min-height: 30rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 30px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  text-decoration: none;
+  color: white;
+
+  animation: fadeUp 0.8s ease forwards;
+  opacity: 0;
+}
+
+/* Фотка */
+.image {
+  width: 100%;
+  height: 20rem;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+/* Текст внутри */
+.cardContent {
+  margin-top: 1rem;
+}
+
+.cardTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem 0;
+}
+
+.cardText {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+/* Адаптив */
+@media (max-width: 1100px) {
+  .cards {
+    flex-wrap: wrap; /* если уже не влазит — переносим */
+  }
+}
+
+@media (max-width: 600px) {
+  .wrapper {
+    padding: 2rem;
+  }
+
+  .title {
+    font-size: 2.5rem;
+    text-align: center;
+  }
+
+  .card {
+    width: 100%;
+  }
+}

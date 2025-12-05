@@ -17,20 +17,22 @@ const OrganizeAuthPage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-
       <form className={styles.form} onSubmit={handleSubmit}>
+        
+        <label className={styles.label}>login</label>
         <input
           type="text"
-          placeholder="login"
           value={login}
+          placeholder=" "
           onChange={(e) => setLogin(e.target.value)}
           className={styles.input}
         />
 
+        <label className={styles.label}>password</label>
         <input
           type="password"
-          placeholder="password"
           value={password}
+          placeholder=" "
           onChange={(e) => setPassword(e.target.value)}
           className={styles.input}
         />

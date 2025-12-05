@@ -7,15 +7,9 @@ const OrganizeCreateHackPage: React.FC = () => {
 
   const [form, setForm] = useState({
     title: "",
-    regEnd: "",
-    startTasks: "",
-    sessions: "",
-    commission: "",
-    final: "",
-    winners: "",
     description: "",
-    teamMin: "",
-    teamMax: "",
+    start:"",
+    end:"",
   });
 
   useEffect(() => {
@@ -23,15 +17,9 @@ const OrganizeCreateHackPage: React.FC = () => {
       // TODO: fetch from API
       setForm({
         title: "ITAM HACK",
-        regEnd: "2025-02-10",
-        startTasks: "2025-02-11",
-        sessions: "2025-02-12",
-        commission: "2025-02-15",
-        final: "2025-02-20",
-        winners: "2025-02-21",
         description: "Описание хакатона…",
-        teamMin: "1",
-        teamMax: "5",
+        start:"20-12-2025",
+        end:"13-01-2026"
       });
     }
   }, [id]);
@@ -51,57 +39,43 @@ const OrganizeCreateHackPage: React.FC = () => {
 
       <div className={styles.form}>
         <div className={styles.left}>
-          <label>название:</label>
-          <input value={form.title} onChange={(e) => handleChange("title", e.target.value)} />
-
-          <label>регистрация до:</label>
-          <input type="date" value={form.regEnd} onChange={(e) => handleChange("regEnd", e.target.value)} />
-
-          <label>старт задач:</label>
-          <input type="date" value={form.startTasks} onChange={(e) => handleChange("startTasks", e.target.value)} />
-
-          <label>экспертные сессии:</label>
-          <input type="date" value={form.sessions} onChange={(e) => handleChange("sessions", e.target.value)} />
-
-          <label>работа комиссии:</label>
-          <input type="date" value={form.commission} onChange={(e) => handleChange("commission", e.target.value)} />
-
-          <label>Финал / объявление победителей:</label>
-          <input type="date" value={form.winners} onChange={(e) => handleChange("winners", e.target.value)} />
-        </div>
-
-        <div className={styles.right}>
-          <label>Фото:</label>
-          <input type="file" />
+          <label>Название:</label>
+          <input 
+            type="text"
+            value={form.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+          />
 
           <label>Описание:</label>
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
           />
-
-          {/* Новые поля */}
-          <label>Минимум человек в команде:</label>
-          <input
-            type="number"
-            min={1}
-            value={form.teamMin}
-            onChange={(e) => handleChange("teamMin", e.target.value)}
-          />
-
-          <label>Максимум человек в команде:</label>
-          <input
-            type="number"
-            min={1}
-            value={form.teamMax}
-            onChange={(e) => handleChange("teamMax", e.target.value)}
-          />
         </div>
-      </div>
 
-      <button className={styles.save} onClick={save}>
-        сохранить изменения
-      </button>
+        <div className={styles.right}>
+          <label>Фото:</label>
+          <input type="file" />
+
+          <label>Дата начала:</label>
+          <input
+            type="date"
+            value={form.start}
+            onChange={(e) => handleChange("start", e.target.value)}
+          />
+
+          <label>Дата конца:</label>
+          <input
+            type="date"
+            value={form.end}
+            onChange={(e) => handleChange("end", e.target.value)}
+          />
+
+          <button className={styles.save} onClick={save}>
+            сохранить изменения
+          </button>
+          </div>
+        </div>
     </div>
   );
 };

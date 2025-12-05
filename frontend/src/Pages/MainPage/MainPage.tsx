@@ -25,7 +25,7 @@ const MainPage: React.FC = () => {
             начать
           </Link>
 
-          <Link to="../listhack" className={styles.buttonOutline}>
+          <Link to="../organizer" className={styles.buttonOutline}>
             для организаторов
           </Link>
         </div>

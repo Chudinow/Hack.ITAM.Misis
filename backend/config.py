@@ -13,3 +13,4 @@ DB_PASSWORD = config("DB_PASSWORD")
 
 SECRET_KEY = config("SECRET_KEY")
 JWT_EXPIRE_MINUTES = config("JWT_EXPIRE_MINUTES", cast=int, default=1440)
+TG_BOT_TOKEN = config("TG_BOT_TOKEN")

@@ -78,6 +78,7 @@ class HackathonModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), index=True)
     description: Mapped[str] = mapped_column(Text)
+    photo_url: Mapped[str] = mapped_column(Text)
 
     start_date: Mapped["Date"] = mapped_column(Date)
     end_date: Mapped["Date"] = mapped_column(Date)
@@ -117,6 +118,7 @@ class TeamModel(Base):
 class TeamMemberModel(Base):
     __tablename__ = "team_members"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
 

@@ -7,6 +7,7 @@ class HackSchema(BaseModel):
     id: int
     name: str
     description: str
+    photo_url: str
     start_date: datetime
     end_date: datetime
     tags: str

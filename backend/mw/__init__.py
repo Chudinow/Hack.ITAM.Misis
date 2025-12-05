@@ -1,1 +1,1 @@
-from errors import ErrorHandlerMiddleware
+from mw.errors import ErrorHandlerMiddleware

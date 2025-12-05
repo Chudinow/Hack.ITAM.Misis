@@ -5,14 +5,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from db import db
 from mw import ErrorHandlerMiddleware
-from routes import hack_router
+from routes import hack_router, team_router, user_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await db.connect()
     yield
-    await db.disconnect()
+    # await db.connect()
+    # yield
+    # await db.disconnect()
 
 
 app = FastAPI(
@@ -43,6 +44,8 @@ async def health_check():
 
 
 app.include_router(hack_router)
+app.include_router(team_router)
+app.include_router(user_router)
 
 if __name__ == "__main__":
     import uvicorn

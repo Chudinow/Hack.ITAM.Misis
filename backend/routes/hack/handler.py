@@ -5,10 +5,10 @@ from starlette.status import HTTP_404_NOT_FOUND
 from db import crud, get_session
 from routes.hack.schema import HackListSchema, HackSchema
 
-router = APIRouter()
+router = APIRouter(prefix="/api/hack")
 
 
-@router.get("/api/hack/list")
+@router.get("/list")
 async def get_all_hacks(session: AsyncSession = Depends(get_session)) -> HackListSchema:
     hacks = await crud.get_hacks(session)
     return HackListSchema(
@@ -17,6 +17,7 @@ async def get_all_hacks(session: AsyncSession = Depends(get_session)) -> HackLis
                 id=hack.id,
                 name=hack.name,
                 description=hack.description,
+                photo_url=hack.photo_url,
                 start_date=hack.start_date,
                 end_date=hack.start_date,
                 tags=hack.tags,
@@ -26,7 +27,7 @@ async def get_all_hacks(session: AsyncSession = Depends(get_session)) -> HackLis
     )
 
 
-@router.get("/api/hack/{id}")
+@router.get("/{id}")
 async def get_hack_by_id(id: int, session: AsyncSession = Depends(get_session)) -> HackSchema:
     hack = await crud.get_hack_by_id(session, id)
     if hack is None:
@@ -36,6 +37,7 @@ async def get_hack_by_id(id: int, session: AsyncSession = Depends(get_session)) 
         id=hack.id,
         name=hack.name,
         description=hack.description,
+        photo_url=hack.photo_url,
         start_date=hack.start_date,
         end_date=hack.end_date,
         tags=hack.tags,

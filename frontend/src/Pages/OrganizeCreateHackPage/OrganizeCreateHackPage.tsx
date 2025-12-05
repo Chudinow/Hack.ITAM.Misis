@@ -14,6 +14,8 @@ const OrganizeCreateHackPage: React.FC = () => {
     final: "",
     winners: "",
     description: "",
+    teamMin: "",
+    teamMax: "",
   });
 
   useEffect(() => {
@@ -28,6 +30,8 @@ const OrganizeCreateHackPage: React.FC = () => {
         final: "2025-02-20",
         winners: "2025-02-21",
         description: "Описание хакатона…",
+        teamMin: "1",
+        teamMax: "5",
       });
     }
   }, [id]);
@@ -47,7 +51,6 @@ const OrganizeCreateHackPage: React.FC = () => {
 
       <div className={styles.form}>
         <div className={styles.left}>
-
           <label>название:</label>
           <input value={form.title} onChange={(e) => handleChange("title", e.target.value)} />
 
@@ -75,6 +78,23 @@ const OrganizeCreateHackPage: React.FC = () => {
           <textarea
             value={form.description}
             onChange={(e) => handleChange("description", e.target.value)}
+          />
+
+          {/* Новые поля */}
+          <label>Минимум человек в команде:</label>
+          <input
+            type="number"
+            min={1}
+            value={form.teamMin}
+            onChange={(e) => handleChange("teamMin", e.target.value)}
+          />
+
+          <label>Максимум человек в команде:</label>
+          <input
+            type="number"
+            min={1}
+            value={form.teamMax}
+            onChange={(e) => handleChange("teamMax", e.target.value)}
           />
         </div>
       </div>

@@ -21,18 +21,13 @@ export const router = createBrowserRouter([
             {path:"profile",element:<ProfilePage/>},
         ]
     },{
-        
         path: "/organizer",
         element: <OrganizerLayout />,
         children: [
             { index: true, element: <Navigate to="/organizer/login" replace /> },
-
             { path: "login", element: <OrganizeAuthPage /> },
-
             { path: "hacks", element: <OrganizeHackathonPage /> },
-
             { path: "hacks/create", element: <OrganizeCreateHackPage /> },
-
             { path: "hacks/:id", element: <OrganizeCreateHackPage /> },
         ],
     },

@@ -19,15 +19,14 @@
 }
 
 .grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 4rem;
-  flex-wrap: wrap;
-
   padding-left: 1rem;
 }
 
 .createCard {
-  width: clamp(16rem, 28vw, 26rem);
+  width: clamp(16rem, 28vw, 23rem);
   height: clamp(10rem, 16vw, 15rem);
 
   background: rgba(214, 155, 255, 0.25);
@@ -56,7 +55,7 @@
 }
 
 .hackCard {
-  width: clamp(16rem, 28vw, 26rem);
+  width: clamp(20rem, 28vw, 23rem);
   height: clamp(10rem, 16vw, 15rem);
 
   background: rgba(255,255,255,0.8);
@@ -82,26 +81,20 @@
 }
 
 @media (max-width: 1024px) {
-  .page {
-    padding: 4rem 2rem;
-  }
-
   .grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
-    justify-content: center;
+    justify-items: center;
   }
 }
 
 @media (max-width: 768px) {
-  .page {
-    padding: 3rem 1.5rem;
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+    justify-items: center;
   }
 
-  .grid {
-    flex-direction: column;
-    align-items: center;
-    gap: 2.5rem;
-  }
 
   .createCard,
   .hackCard {

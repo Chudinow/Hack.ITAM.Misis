@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import styles from "./main-page.module.css";
 import { Link } from "react-router-dom";
 import { HackAPI, Hack } from "../../Shared/api/HackApi"
@@ -7,6 +7,8 @@ const MainPage: React.FC = () => {
   const [upcoming, setUpcoming] = useState<Hack[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const hackSectionRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     HackAPI.getUpcoming().then((res) => {
       setUpcoming(res.hacks);
@@ -14,16 +16,17 @@ const MainPage: React.FC = () => {
     });
   }, []);
 
-  return (
-    <div className={styles.wrapper}>
-      
-      <div className={styles.starsWrapper}>
-        <div className={`${styles.star} ${styles.star1}`} />
-        <div className={`${styles.star} ${styles.star2}`} />
-        <div className={`${styles.star} ${styles.star3}`} />
-      </div>
+  const scrollToHacks = () => {
+    hackSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
-      <div className={styles.content}>
+  return (
+    <div className={styles.page}>
+      
+      <div className={styles.hero}>
         <h1 className={styles.title}>
           Выбери хакатон,<br />
           найди команду,<br />
@@ -31,17 +34,21 @@ const MainPage: React.FC = () => {
         </h1>
 
         <div className={styles.buttons}>
-          <Link to="/listhack" className={styles.buttonPrimary}>
+
+          {/* КНОПКА, КОТОРАЯ ПРОКРУЧИВАЕТ ВНИЗ */}
+          <button onClick={scrollToHacks} className={styles.buttonPrimary}>
             Начать
-          </Link>
+          </button>
 
           <Link to="/organizer" className={styles.buttonOutline}>
             Я организатор
           </Link>
+          
         </div>
       </div>
 
-      <section className={styles.hackSection}>
+      {/* СЕКЦИЯ ДЛЯ СКРОЛЛА */}
+      <section ref={hackSectionRef} className={styles.hackSection}>
         <h2 className={styles.sectionTitle}>Ближайшие хакатоны</h2>
 
         {loading ? (

@@ -1,5 +1,4 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import MainLayout from "../Shared/Layouts/MainLayout/MainLayot";
 import MainPage from "../Pages/MainPage/MainPage";
 import HackDetailsPage from "../Pages/HackDetailsPage/HackDetailsPage";
 import ListHackPage from "../Pages/ListHackPage/ListHackPage";
@@ -9,20 +8,23 @@ import OrganizeAuthPage from "../Pages/OrganizeAuthPage/OrganizeAuthPage";
 import OrganizeHackathonPage from "../Pages/OrganizeHackathonPage/OrganizeHackathonPage";
 import OrganizeCreateHackPage from "../Pages/OrganizeCreateHackPage/OrganizeCreateHackPage";
 import CreateTeamPage from "../Pages/CreateTeamPage/CreateTeamPage";
+import MainLayout from "../Shared/Layouts/MainLayout/MainLayout";
 
 export const router = createBrowserRouter([
     {
-        path:"/",
-        element:<MainLayout/>,
-        children:[
-            {index: true, element:<Navigate to="/main" replace/>},
-            {path:"main", element:<MainPage/>},
-            {path:"hackdetails",element:<HackDetailsPage/>},
-            {path:"listhack",element:<ListHackPage/>},
-            {path:"profile",element:<ProfilePage/>},
+        path: "/",
+        element: <MainLayout />,
+        children: [
+            { index: true, element: <Navigate to="/main" replace /> },
+            { path: "main", element: <MainPage /> },
+            { path: "hackdetails", element: <HackDetailsPage /> },
+            { path: "listhack", element: <ListHackPage /> },
+            { path: "profile", element: <ProfilePage /> },
             { path: "team/create", element: <CreateTeamPage /> },
-        ]
-    },{
+        ],
+    },
+    
+    {
         path: "/organizer",
         element: <OrganizerLayout />,
         children: [
@@ -33,4 +35,4 @@ export const router = createBrowserRouter([
             { path: "hacks/:id", element: <OrganizeCreateHackPage /> },
         ],
     },
-])
+]);

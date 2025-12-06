@@ -1,49 +1,18 @@
-.wrapper {
+/* ===== ОСНОВНАЯ СЕТКА СТРАНИЦЫ ===== */
+
+.page {
   width: 100%;
-  min-height: 100vh;
-  background: #000;
-  color: #fff;
-  overflow-x: hidden;
   position: relative;
-  padding-bottom: 4rem;
+  z-index: 5; /* чтобы быть над звёздами из layout */
+  padding: 6rem 1.6rem 3rem;
 }
 
-/* --------- АННИМАЦИЯ ЗВЁЗД --------- */
 
-.starsWrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-}
+/* ===== HERO БЛОК ===== */
 
-.star {
-  position: absolute;
-  width: 25rem;
-  height: 25rem;
-  background: url('../../assets/Star1.png') no-repeat center/contain;
-  opacity: 0.65;
-  animation: rotateStar 18s linear infinite;
-}
-
-.star1 { top: -7%; left: 5%; width: 240px; animation-duration: 22s; }
-.star2 { top: 20%; right: 10%; width: 200px; animation-duration: 17s; }
-.star3 { top: 60%; left: 15%; width: 260px; animation-duration: 20s; }
-
-@keyframes rotateStar {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* --------- ТЕКСТОВЫЙ БЛОК --------- */
-
-.content {
-  position: relative;
-  z-index: 10;
-  padding: 6rem 1.6rem 2rem;
+.hero {
+  margin-top: 10rem;
+  margin-bottom: 19rem;
 }
 
 .title {
@@ -55,12 +24,14 @@
   animation: fadeUp 1s ease forwards;
   opacity: 0;
 }
+
 @keyframes fadeUp {
   0% { opacity: 0; transform: translateY(25px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
-/* --------- КНОПКИ --------- */
+
+/* ===== КНОПКИ ===== */
 
 .buttons {
   display: flex;
@@ -121,11 +92,11 @@
   transform: scale(0.97);
 }
 
-/* --------- ХАКАТОНЫ --------- */
+
+/* ===== БЛОК ХАКАТОНЫ ===== */
 
 .hackSection {
   margin-top: 4rem;
-  padding: 0 1.4rem;
 }
 
 .sectionTitle {
@@ -133,7 +104,7 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
 
-  color: #D9A8FF;
+  color: #D9A8FF; /* как ты просил */
   letter-spacing: 0.5px;
 }
 
@@ -149,9 +120,11 @@
   overflow: hidden;
   text-decoration: none;
   color: white;
+
   animation: fadeIn 0.9s ease forwards;
   opacity: 0;
 }
+
 .hackCard:nth-child(1) { animation-delay: 0.1s; }
 .hackCard:nth-child(2) { animation-delay: 0.25s; }
 .hackCard:nth-child(3) { animation-delay: 0.4s; }
@@ -190,6 +163,7 @@
   border-radius: 999px;
 }
 
+
 /* Кнопка “Посмотреть все” */
 
 .viewAll {
@@ -200,20 +174,21 @@
   background: #222;
   border-radius: 14px;
   text-decoration: none;
-  color: #D69BFF;
+  color: #D9A8FF;
   font-weight: 600;
 }
 
-/* --------- DESKTOP --------- */
+
+/* ===== DESKTOP ===== */
 
 @media (min-width: 900px) {
-  .title {
-    font-size: 4rem;
+
+  .page {
+    padding: 10rem 4rem 4rem;
   }
 
-  .content {
-    padding-top: 10rem;
-    padding-left: 4rem;
+  .title {
+    font-size: 4rem;
   }
 
   .hackList {

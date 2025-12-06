@@ -1,0 +1,44 @@
+.wrapper {
+  width: 100%;
+  min-height: 100vh;
+  background: #000;
+  color: #fff;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.starsWrapper {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.star {
+  position: absolute;
+  width: 25rem;
+  height: 25rem;
+  background: url("/assets/Star1.png") no-repeat center/contain;
+  opacity: 0.65;
+  animation: rotateStar 18s linear infinite;
+}
+
+.star1 { top: -7%; left: 5%; width: 240px; animation-duration: 22s; }
+.star2 { top: 20%; right: 10%; width: 200px; animation-duration: 17s; }
+.star3 { top: 60%; left: 15%; width: 260px; animation-duration: 20s; }
+
+@keyframes rotateStar {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 5;
+
+  padding-bottom: 4rem;
+  min-height: 100vh;
+}

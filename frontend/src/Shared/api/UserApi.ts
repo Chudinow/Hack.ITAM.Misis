@@ -15,7 +15,7 @@ export interface TelegramAuthPayload {
   hash: string;
 }
 
-/* --- User --- */
+/* --- User (basic info) --- */
 export interface User {
   id: number;
   name: string;
@@ -27,6 +27,7 @@ export interface UserProfileEditPayload {
   user_id: number;
   about: string;
   skills_id: number[];
+  role: string; // новое поле
 }
 
 /* --- Skill --- */
@@ -42,6 +43,7 @@ export interface UserProfile {
   user_id: number;
   about: string;
   skills: Skill[];
+  role: string; // новое поле
 }
 
 /* --- Skills List --- */
@@ -77,7 +79,9 @@ export const UserAPI = {
    * GET /api/user/{user_id}/profile
    */
   getProfile: async (userId: number | string): Promise<UserProfile> => {
-    const { data } = await apiInstance.get<UserProfile>(`/api/user/${userId}/profile`);
+    const { data } = await apiInstance.get<UserProfile>(
+      `/api/user/${userId}/profile`
+    );
     return data;
   },
 

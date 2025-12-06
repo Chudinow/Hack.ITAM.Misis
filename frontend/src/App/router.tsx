@@ -12,6 +12,9 @@ import MainLayout from "../Shared/Layouts/MainLayout/MainLayout";
 import AuthPage from "../Pages/AuthPage/AuthPage";
 import RequireAuth from "../Shared/AuthGuard";
 
+import ParticipantFormPage from '../Pages/ParticipantFormPage/ParticipantFormPage'
+import TeamFormPage from '../Pages/TeamFormPage/TeamFormPage'
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -27,6 +30,8 @@ export const router = createBrowserRouter([
         children: [
           { path: "hackdetails/:id", element: <HackDetailsPage /> },
           { path: "listhack", element: <ListHackPage /> },
+          { path: "hackdetails/:id/participant-form", element: <ParticipantFormPage /> },
+          { path: "hackdetails/:id/team-form", element: <TeamFormPage /> },
         ],
       },
     ],

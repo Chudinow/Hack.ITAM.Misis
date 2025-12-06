@@ -1,0 +1,142 @@
+.page {
+  width: 100%;
+  min-height: 100vh;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+}
+
+/* Хедер */
+.headerCard {
+  width: 100%;
+  background: linear-gradient(180deg, #c042ff, #7a00c8);
+  padding: 2rem;
+  padding-top: 3rem;
+  border-radius: 0 0 30px 30px;
+}
+
+.title {
+  font-size: 1.9rem;
+  font-weight: 800;
+}
+
+.tagRow {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.tag {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+/* Форма */
+
+.formWrapper {
+  padding: 2rem 1.5rem 3rem;
+}
+
+.bigTitle {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  border-radius: 12px;
+  border: 1.5px solid #d18bff;
+  background:transparent;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  color: #fff;
+  outline: none;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: #f0b4ff;
+}
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l5 5 5-5' stroke='white' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 1rem) center;
+  background-size: 12px 8px;
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.submitButton {
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.9rem;
+  border-radius: 999px;
+  border: none;
+  background: #d18bff;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.submitButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(198, 133, 255, 0.5);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+  box-shadow: none;
+}
+
+.loading {
+  color: #fff;
+  padding: 2rem;
+}
+
+/* Desktop */
+@media (min-width: 900px) {
+  .page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .headerCard {
+    max-width: 480px;
+    border-radius: 0 0 40px 40px;
+  }
+
+  .formWrapper {
+    max-width: 480px;
+  }
+}

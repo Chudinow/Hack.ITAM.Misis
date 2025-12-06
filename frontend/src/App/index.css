@@ -18,6 +18,7 @@ html {
 }
 
 body {
+  background-color: black;
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;

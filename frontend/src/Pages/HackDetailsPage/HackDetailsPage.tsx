@@ -28,6 +28,15 @@ const HackDetailsPage: React.FC = () => {
     return <div className={styles.loading}>Загрузка...</div>;
   }
 
+  const handleFindTeam = () => {
+    navigate(`/hackdetails/${id}/participant-form`);
+  };
+
+  const handleHaveTeam = () => {
+    navigate(`/hackdetails/${id}/team-form`);
+  };
+
+
   return (
     <div className={styles.page + " " + styles.fadePage}>
 
@@ -50,11 +59,11 @@ const HackDetailsPage: React.FC = () => {
         <p className={styles.description + " " + styles.fadeText}>{hack.description}</p>
 
         {/* КНОПКИ */}
-        <button className={styles.mainButton}>
+        <button className={styles.mainButton} onClick={handleFindTeam}>
           Найти команду
         </button>
 
-        <button className={styles.secondaryButton}>
+        <button className={styles.secondaryButton} onClick={handleHaveTeam}>
           У меня есть команда
         </button>
 

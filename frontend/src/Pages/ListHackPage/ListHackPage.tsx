@@ -10,7 +10,7 @@ const ListHackPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await HackAPI.getUpcoming();
+        const res = await HackAPI.getAll();
         setHacks(res.hacks);
       } catch (err) {
         console.error("Ошибка загрузки хакатонов:", err);
@@ -26,11 +26,11 @@ const ListHackPage: React.FC = () => {
 
   return (
     <div className={styles.wrapper}>
-      <h1 className={styles.title}>Ближайшие Хакатоны</h1>
+      <h1 className={styles.title}>Хакатоны</h1>
 
       <div className={styles.cards}>
         {hacks.map(hack => (
-          <Link key={hack.id} to={`/hackdetails?id=${hack.id}`} className={styles.card}>
+          <Link key={hack.id} to={`/hackdetails/${hack.id}`} className={styles.card}>
             <img src={hack.photo_url} alt="hack-img" className={styles.image} />
 
             <div className={styles.cardContent}>

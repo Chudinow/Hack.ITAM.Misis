@@ -118,11 +118,11 @@
     padding: 3rem;
     font-size: 1.15rem;
   }
-
+/* 
   .mainButton,
   .secondaryButton {
     max-width: 22rem;
-  }
+  } */
 }
 
 @keyframes fadeInUp {

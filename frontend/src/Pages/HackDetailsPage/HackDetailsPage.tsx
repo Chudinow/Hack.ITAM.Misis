@@ -66,8 +66,8 @@ const HackDetailsPage: React.FC = () => {
         <button className={styles.secondaryButton} onClick={handleHaveTeam}>
           У меня есть команда
         </button>
-
       </div>
+      
     </div>
   );
 };

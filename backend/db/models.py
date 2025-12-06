@@ -1,4 +1,6 @@
-from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, Integer, String, Text
+from enum import Enum as PyEnum
+
+from sqlalchemy import BigInteger, Boolean, Date, Enum as PQEnum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -27,7 +29,7 @@ class ProfileModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
-    about: Mapped[str] = mapped_column(Text)
+    about: Mapped[str] = mapped_column(String(512))
 
     user: Mapped["UserModel"] = relationship("UserModel", back_populates="profiles", lazy="joined")
     profile_skills: Mapped[list["ProfileSkillModel"]] = relationship(
@@ -49,11 +51,20 @@ class ProfileSkillModel(Base):
     )
 
 
+class SkillType(PyEnum):
+    HARD = "hard"
+    SOFT = "soft"
+
+
 class SkillModel(Base):
     __tablename__ = "skills"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(32), index=True)
+    type: Mapped[SkillType] = mapped_column(
+        PQEnum(SkillType, create_type=True),
+        nullable=False,
+    )
 
     profile_skills: Mapped[list["ProfileSkillModel"]] = relationship(
         "ProfileSkillModel", back_populates="skill", lazy="noload"
@@ -103,9 +114,10 @@ class TeamModel(Base):
     __tablename__ = "teams"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    hackathon_id: Mapped[int] = mapped_column(ForeignKey("hackathons.id"), index=True)
     name: Mapped[str] = mapped_column(String(32), index=True)
     is_completed: Mapped[bool] = mapped_column(Boolean)
-    hackathon_id: Mapped[int] = mapped_column(ForeignKey("hackathons.id"), index=True)
+    # по-хорошему сюда надо наебашить approved, чтобы организатор мог принимать или нет команды
 
     hackathon: Mapped["HackathonModel"] = relationship(
         "HackathonModel", back_populates="teams", lazy="joined"
@@ -115,12 +127,25 @@ class TeamModel(Base):
     )
 
 
+class RoleType(PyEnum):
+    BACKEND = "backend"
+    FRONTEND = "frontend"
+    MOBILE = "mobile"
+    ML = "ml"
+    PRODUCT = "product"
+
+
 class TeamMemberModel(Base):
     __tablename__ = "team_members"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
+    role: Mapped[RoleType] = mapped_column(
+        PQEnum(RoleType, create_type=True),
+        nullable=False,
+    )
+    approved: Mapped[bool] = mapped_column(Boolean)
 
     team: Mapped["TeamModel"] = relationship(
         "TeamModel", back_populates="team_members", lazy="joined"

@@ -13,5 +13,13 @@ class HackSchema(BaseModel):
     tags: str
 
 
+class MetaSchema(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
 class HackListSchema(BaseModel):
     hacks: list[HackSchema]
+    meta: MetaSchema

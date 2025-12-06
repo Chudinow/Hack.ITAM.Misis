@@ -1,4 +1,13 @@
-from sqlalchemy import BigInteger, Boolean, Date, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    Date,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    PrimaryKeyConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -14,7 +23,7 @@ class UserModel(Base):
     name: Mapped[str] = mapped_column(String(64))
     avatar_url: Mapped[str] = mapped_column(Text)
 
-    profile: Mapped[list["ProfileModel"]] = relationship(
+    profiles: Mapped[list["ProfileModel"]] = relationship(
         "ProfileModel", back_populates="user", lazy="selectin"
     )
     team_members: Mapped[list["TeamMemberModel"]] = relationship(
@@ -79,8 +88,8 @@ class HackathonModel(Base):
     name: Mapped[str] = mapped_column(String(255), index=True)
     description: Mapped[str] = mapped_column(Text)
 
-    start_date: Mapped["Date"] = mapped_column(Date)
-    end_date: Mapped["Date"] = mapped_column(Date)
+    start_date: Mapped[Date] = mapped_column(Date)
+    end_date: Mapped[Date] = mapped_column(Date)
 
     tags: Mapped[str] = mapped_column(Text)
 
@@ -116,6 +125,9 @@ class TeamModel(Base):
 
 class TeamMemberModel(Base):
     __tablename__ = "team_members"
+    __table_args__ = (
+        PrimaryKeyConstraint("team_id", "user_id"),
+    )
 
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)

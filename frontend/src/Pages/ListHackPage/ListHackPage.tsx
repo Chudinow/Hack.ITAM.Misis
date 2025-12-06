@@ -10,7 +10,7 @@ const ListHackPage: React.FC = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await HackAPI.getUpcoming();
+        const res = await HackAPI.getAll();
         setHacks(res.hacks);
       } catch (err) {
         console.error("Ошибка загрузки хакатонов:", err);

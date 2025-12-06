@@ -1,151 +1,81 @@
 .page {
-  width: 100%;
+  background: #0d0d0f;
   min-height: 100vh;
-
-  padding: 4rem 5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
+  padding: 40px;
+  color: #e6e6e6;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .title {
-  font-size: clamp(3rem, 6vw, 5rem);
-  font-weight: 800;
-  color: #fff;
-  margin: 0 0 2rem 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #b47bff;
+  margin-bottom: 20px;
 }
 
 .form {
-  display: grid;
-  grid-template-columns: 1.7fr 1fr;
-  gap: 4rem 5rem;
-  align-items: start;
+  display: flex;
+  gap: 40px;
 }
 
-.left label,
-.right label {
-  color: #fff;
-  font-size: 1.6rem;
-  margin-bottom: 0.5rem;
+.left, .right {
+  flex: 1;
+}
+
+label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 5px;
   display: block;
 }
 
-input[type="date"],
 input[type="text"],
-input[type="file"] {
+input[type="date"],
+textarea {
   width: 100%;
-  padding: 0.9rem 1rem;
+  padding: 10px;
 
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.12);
+  background: #1b1b1f;
+  border: 1px solid #2c2c34;
+  color: #e6e6e6;
 
-  color: #fff;
-  font-size: 1.3rem;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-family: inherit;
 
-  outline: none;
-  transition: 0.25s ease;
-  margin-bottom: 1.6rem;
+  transition: border 0.2s ease;
 }
 
-input:focus {
-  background: rgba(255,255,255,0.22);
+input:focus,
+textarea:focus {
+  border-color: #7f3bff;
+  outline: none;
 }
 
 textarea {
-  width: 100%;
-  height: 22rem;
-
-  padding: 1rem;
-  font-size: 1.3rem;
-
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.12);
-
-  color: #fff;
-  outline: none;
-  resize: none;
-  margin-bottom: 1.6rem;
-
-  transition: 0.25s ease;
-}
-
-textarea:focus {
-  background: rgba(255,255,255,0.22);
+  resize: vertical;
+  min-height: 160px;
 }
 
 .save {
-  margin-top: 1rem;
-  padding: 0.7rem 1.6rem;
-
-  font-size: 1.3rem;
-  color: #fff;
-
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.7);
-  background: rgba(255,255,255,0.15);
-
+  width: 100%;
+  padding: 12px;
+  background: #7f3bff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.25s ease;
+  margin-top: 20px;
 
-  width: fit-content;
+  transition: background 0.2s ease;
 }
 
 .save:hover {
-  background: rgba(255,255,255,0.25);
-  transform: scale(1.04);
+  background: #8e4aff;
 }
 
-@media (max-width: 1024px) {
-  .page {
-    padding: 3rem 2rem;
-  }
-
-  .form {
-    grid-template-columns: 1fr;
-  }
-
-  .right {
-    width: 60%;
-  }
-}
-
-@media (max-width: 700px) {
-  .form {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
-
-  .right {
-    width: 100%;
-  }
-
-  textarea {
-    height: 18rem;
-  }
-
-  .save {
-    font-size: 1.2rem;
-  }
-
-  input,
-  textarea {
-    font-size: 1.15rem;
-  }
-}
-
-@media (max-width: 430px) {
-  .title {
-    font-size: 2.4rem;
-  }
-
-  textarea {
-    height: 15rem;
-  }
-
-  .save {
-    font-size: 1.1rem;
-    padding: 0.6rem 1.2rem;
-  }
+.loading {
+  color: #aaa;
+  font-size: 14px;
 }

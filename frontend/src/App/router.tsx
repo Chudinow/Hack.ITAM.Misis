@@ -3,7 +3,7 @@ import MainPage from "../Pages/MainPage/MainPage";
 import HackDetailsPage from "../Pages/HackDetailsPage/HackDetailsPage";
 import ListHackPage from "../Pages/ListHackPage/ListHackPage";
 
-import OrganizerLayout from "../Shared/Layouts/OrganizerLayout/OrganizerLayout";
+import RequireOrganizerAuth from "../Shared/RequireOrganizerAuth";
 import OrganizeAuthPage from "../Pages/OrganizeAuthPage/OrganizeAuthPage";
 import OrganizeHackathonPage from "../Pages/OrganizeHackathonPage/OrganizeHackathonPage";
 import OrganizeCreateHackPage from "../Pages/OrganizeCreateHackPage/OrganizeCreateHackPage";
@@ -35,17 +35,22 @@ export const router = createBrowserRouter([
         ],
       },
     ],
-  },
+  },{
 
-  {
+    path: "/organizer/login",
+    element: <OrganizeAuthPage />,
+
+  },{
+
     path: "/organizer",
-    element: <OrganizerLayout />,
+    element: <RequireOrganizerAuth />,
     children: [
-      { index: true, element: <Navigate to="/organizer/login" replace /> },
-      { path: "login", element: <OrganizeAuthPage /> },
+      { index: true, element: <Navigate to="/organizer/hacks" replace /> },
       { path: "hacks", element: <OrganizeHackathonPage /> },
       { path: "hacks/create", element: <OrganizeCreateHackPage /> },
       { path: "hacks/:id", element: <OrganizeCreateHackPage /> },
+      
     ],
   },
+
 ]);

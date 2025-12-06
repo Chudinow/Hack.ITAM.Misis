@@ -1,104 +1,149 @@
-// OrganizerApi.ts
-import {apiInstance} from "../api/apiInstance"; // путь тот же, что в других API
+import { apiInstance } from "./apiInstance";
 
-// --- Авторизация ---
+/* ===============================
+      MOCK MODE
+================================= */
+
+const MOCK = true;
+
+// Мок-данные
+const MOCK_HACKS = [
+  {
+    id: "1",
+    title: "ITAM HACK 2025",
+    description: "Лучший хакатон по разработке EdTech",
+    date_start: "2025-01-10",
+    date_end: "2025-01-12",
+    photo_url: "",
+  },
+  {
+    id: "2",
+    title: "Cyber Challenge",
+    description: "Хакатон по кибербезопасности",
+    date_start: "2025-02-05",
+    date_end: "2025-02-06",
+    photo_url: "",
+  },
+];
+
+/* ===============================
+      TYPES
+================================= */
+
 export interface OrganizerLoginRequest {
   email: string;
   password: string;
 }
 
-export interface Organizer {
-  id: string;
-  email: string;
-  name: string;
-}
-
 export interface OrganizerLoginResponse {
   access_token: string;
-  token_type: string;
-  organizer: Organizer;
+  organizer: { id: string; name: string };
 }
 
-export const OrganizerApi = {
-  login: async (data: OrganizerLoginRequest): Promise<OrganizerLoginResponse> => {
-    const res = await apiInstance.post("/organizers/login", data);
-    return res.data;
-  },
-};
-
-// --- Модели хакатонов ---
 export interface HackathonCreate {
   title: string;
   description?: string;
-  registration_deadline: string;
-  tasks_start: string;
-  expert_sessions?: string[];
-  commission_work: string;
+  date_start: string;
+  date_end: string;
 }
 
 export interface HackathonUpdate {
   title?: string;
   description?: string;
-  registration_deadline?: string;
-  tasks_start?: string;
-  expert_sessions?: string[];
-  commission_work?: string;
+  date_start?: string;
+  date_end?: string;
 }
 
-export interface HackathonResponse extends HackathonCreate {
+export interface HackathonResponse {
   id: string;
-  organizer_id: string;
-  created_at: string;
-  updated_at: string;
+  title: string;
+  description?: string;
+  date_start: string;
+  date_end: string;
   photo_url?: string;
 }
 
+/* ===============================
+      ORGANIZER API
+================================= */
+
+export const OrganizerApi = {
+  login: async (data: OrganizerLoginRequest): Promise<OrganizerLoginResponse> => {
+    if (MOCK) {
+      // мок авторизации
+      return {
+        access_token: "MOCK_TOKEN",
+        organizer: { id: "0", name: "Mock Admin" },
+      };
+    }
+
+    const res = await apiInstance.post("/organizers/login", data);
+    return res.data;
+  },
+};
+
+/* ===============================
+      HACKATHON API
+================================= */
+
 export const OrganizerHackApi = {
   getMyHackathons: async (): Promise<HackathonResponse[]> => {
+    if (MOCK) return MOCK_HACKS;
+
     const res = await apiInstance.get("/organizer/hackathons");
     return res.data;
   },
 
   createHackathon: async (data: HackathonCreate): Promise<HackathonResponse> => {
+    if (MOCK) {
+      return {
+        id: Date.now().toString(),
+        photo_url: "",
+        ...data,
+      };
+    }
+
     const res = await apiInstance.post("/organizer/hackathons", data);
     return res.data;
   },
 
   getHackathonById: async (id: string): Promise<HackathonResponse> => {
+    if (MOCK) {
+      return MOCK_HACKS.find((h) => h.id === id)!;
+    }
+
     const res = await apiInstance.get(`/organizer/hackathons/${id}`);
     return res.data;
   },
 
   updateHackathon: async (id: string, data: HackathonUpdate) => {
-    const res = await apiInstance.patch(`/organizer/hackathons/${id}`, data);
-    return res.data;
-  },
+  if (MOCK) {
+    const original = MOCK_HACKS.find(h => h.id === id)!;
 
-  uploadPhoto: async (hackathonId: string, file: File) => {
+    return {
+      ...original,
+      ...data,       // обновляем только изменённые поля
+      id,            // и явно указываем id только ОДИН раз
+    };
+  }
+
+  const res = await apiInstance.patch(`/organizer/hackathons/${id}`, data);
+  return res.data;
+},
+
+  uploadPhoto: async (id: string, file: File) => {
+    if (MOCK) {
+      const url = URL.createObjectURL(file);
+      return { success: true, photo_url: url };
+    }
+
     const form = new FormData();
     form.append("photo", file);
 
     const res = await apiInstance.post(
-      `/organizer/hackathons/${hackathonId}/photo`,
+      `/organizer/hackathons/${id}/photo`,
       form,
       { headers: { "Content-Type": "multipart/form-data" } }
-    );
-
-    return res.data;
-  },
-
-  getHackTeams: async (hackathonId: string) => {
-    const res = await apiInstance.get(`/organizer/hackathons/${hackathonId}/teams`);
-    return res.data;
-  },
-
-  getHackParticipants: async (
-    hackathonId: string,
-    team_status?: "with_team" | "without_team"
-  ) => {
-    const res = await apiInstance.get(
-      `/organizer/hackathons/${hackathonId}/participants`,
-      { params: { team_status } }
     );
     return res.data;
   },

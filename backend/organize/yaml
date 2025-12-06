@@ -1,0 +1,255 @@
+paths:
+  /organizers/login:
+    post:
+      summary: Вход для организатора
+      tags: [Организатор]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizerLogin'
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  token_type:
+                    type: string
+                  organizer:
+                    $ref: '#/components/schemas/Organizer'
+
+  /organizer/hackathons:
+    get:
+      summary: Получить все хакатоны текущего организатора
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Список хакатонов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HackathonResponse'
+    
+    post:
+      summary: Создать новый хакатон
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HackathonCreate'
+      responses:
+        '201':
+          description: Хакатон создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HackathonResponse'
+  
+ 
+  /organizer/hackathons/{hackathonId}:
+    get:
+      summary: Получить хакатон по ID
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hackathonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Данные хакатона
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HackathonResponse'
+    
+    patch:
+      summary: Обновить хакатон
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hackathonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HackathonUpdate'
+      responses:
+        '200':
+          description: Хакатон обновлен
+  
+
+  /organizer/hackathons/{hackathonId}/photo:
+    post:
+      summary: Загрузить фото для хакатона
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hackathonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+  
+
+  /organizer/hackathons/{hackathonId}/teams:
+    get:
+      summary: Получить все команды хакатона
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hackathonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Список команд с участниками
+  
+
+  /organizer/hackathons/{hackathonId}/participants:
+    get:
+      summary: Получить участников хакатона
+      tags: [Организатор]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: hackathonId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: team_status
+          in: query
+          schema:
+            type: string
+            enum: [with_team, without_team]
+
+components:
+  schemas:
+    OrganizerLogin:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    
+    Organizer:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        name:
+          type: string
+    
+    HackathonCreate:
+      type: object
+      required: [title, registration_deadline, tasks_start, commission_work]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        registration_deadline:
+          type: string
+          format: date-time
+        tasks_start:
+          type: string
+          format: date-time
+        expert_sessions:
+          type: array
+          items:
+            type: string
+            format: date-time
+        commission_work:
+          type: string
+          format: date-time
+    
+    HackathonUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        registration_deadline:
+          type: string
+          format: date-time
+        tasks_start:
+          type: string
+          format: date-time
+        expert_sessions:
+          type: array
+          items:
+            type: string
+            format: date-time
+        commission_work:
+          type: string
+          format: date-time
+             
+    HackathonResponse:
+      allOf:
+        - $ref: '#/components/schemas/HackathonCreate'
+        - type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            organizer_id:
+              type: string
+              format: uuid
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+            photo_url:
+              type: string

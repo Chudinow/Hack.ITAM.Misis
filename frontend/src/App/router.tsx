@@ -2,12 +2,12 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import MainPage from "../Pages/MainPage/MainPage";
 import HackDetailsPage from "../Pages/HackDetailsPage/HackDetailsPage";
 import ListHackPage from "../Pages/ListHackPage/ListHackPage";
-import ProfilePage from "../Pages/ProfilePage/ProfilePage";
+
 import OrganizerLayout from "../Shared/Layouts/OrganizerLayout/OrganizerLayout";
 import OrganizeAuthPage from "../Pages/OrganizeAuthPage/OrganizeAuthPage";
 import OrganizeHackathonPage from "../Pages/OrganizeHackathonPage/OrganizeHackathonPage";
 import OrganizeCreateHackPage from "../Pages/OrganizeCreateHackPage/OrganizeCreateHackPage";
-import CreateTeamPage from "../Pages/CreateTeamPage/CreateTeamPage";
+
 import MainLayout from "../Shared/Layouts/MainLayout/MainLayout";
 
 export const router = createBrowserRouter([
@@ -19,8 +19,6 @@ export const router = createBrowserRouter([
             { path: "main", element: <MainPage /> },
             { path: "hackdetails/:id", element: <HackDetailsPage /> },
             { path: "listhack", element: <ListHackPage /> },
-            { path: "profile", element: <ProfilePage /> },
-            { path: "team/create", element: <CreateTeamPage /> },
         ],
     },
     

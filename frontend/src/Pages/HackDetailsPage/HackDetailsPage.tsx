@@ -29,10 +29,9 @@ const HackDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page + " " + styles.fadePage}>
 
-      {/* КАРТИНКА-СЕКЦИЯ С ГРАДИЕНТОМ */}
-      <div className={styles.headerCard}>
+      <div className={styles.headerCard + " " + styles.fadeBlock}>
         <h1 className={styles.title}>{hack.name}</h1>
 
         <div className={styles.tagRow}>
@@ -48,7 +47,7 @@ const HackDetailsPage: React.FC = () => {
 
       {/* ОСНОВНОЙ КОНТЕНТ */}
       <div className={styles.content}>
-        <p className={styles.description}>{hack.description}</p>
+        <p className={styles.description + " " + styles.fadeText}>{hack.description}</p>
 
         {/* КНОПКИ */}
         <button className={styles.mainButton}>
@@ -58,6 +57,7 @@ const HackDetailsPage: React.FC = () => {
         <button className={styles.secondaryButton}>
           У меня есть команда
         </button>
+
       </div>
     </div>
   );

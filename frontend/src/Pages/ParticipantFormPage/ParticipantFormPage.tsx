@@ -5,16 +5,20 @@ import styles from "./participant-form-page.module.css";
 import { HackAPI } from "../../Shared/api/HackApi";
 import { UserAPI, Skill } from "../../Shared/api/UserApi";
 
-// 🔥 Fallback навыки — используются, если backend ничего не отдаёт
 const FALLBACK_SKILLS: Skill[] = [
-  { id: 1, name: "JavaScript", type: "hard" },
-  { id: 2, name: "TypeScript", type: "hard" },
+  { id: 1, name: "JS", type: "hard" },
+  { id: 2, name: "TS", type: "hard" },
   { id: 3, name: "React", type: "hard" },
-  { id: 4, name: "Figma", type: "hard" },
-  { id: 5, name: "Teamwork", type: "soft" },
+  { id: 4, name: "Vite", type: "hard" },
+  { id: 5, name: "Python", type: "hard" },
+  { id: 6, name: "C#", type: "hard" },
+  { id: 7, name: "C++", type: "hard" },
+  { id: 8, name: "GO", type: "hard" },
+  { id: 9, name: "Docker", type: "hard" },
+  { id: 10, name: "AI", type: "soft" },
 ];
 
-const roles = ["Frontend", "Backend", "Fullstack", "Designer", "Product", "Analyst"];
+const roles = ["Frontend", "Backend", "Fullstack", "Designer", "Product", "Analyst", "просто забавный чел"];
 
 const ParticipantFormPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,38 +39,27 @@ const ParticipantFormPage: React.FC = () => {
   useEffect(() => {
     async function load() {
       try {
-        // Загружаем пользователя
         const user = await UserAPI.getUser("me");
         setUserId(user.id ?? null);
         setUserName(user.name ?? "");
 
-        // Загружаем профиль
         const profile = await UserAPI.getProfile("me");
         setAbout(profile?.about ?? "");
         setRole(profile?.role ?? "");
         setSkills(profile?.skills?.map((s) => s.id) ?? []);
 
-        // Загружаем хакатон
         const hackData = await HackAPI.getById(hackId!);
         setHack(hackData ?? {});
 
-        // Загружаем навыки
-        let skillsFromApi: Skill[] = [];
-
+        let apiSkills: Skill[] = [];
         try {
-          const skillsData = await UserAPI.getSkills();
-          skillsFromApi = skillsData?.skills ?? [];
+          const skillResp = await UserAPI.getSkills();
+          apiSkills = skillResp.skills ?? [];
         } catch {
-          console.warn("Backend skills not available — using fallback list");
+          console.warn("Skills API unavailable — using fallback");
         }
 
-        // Если API отдал ничего → fallback
-        if (!skillsFromApi.length) {
-          setSkillsList(FALLBACK_SKILLS);
-        } else {
-          setSkillsList(skillsFromApi);
-        }
-
+        setSkillsList(apiSkills.length ? apiSkills : FALLBACK_SKILLS);
       } catch (e) {
         console.error("Ошибка загрузки:", e);
         navigate("/auth");
@@ -78,11 +71,12 @@ const ParticipantFormPage: React.FC = () => {
     load();
   }, [hackId]);
 
-  const handleSkillChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = Array.from(e.target.selectedOptions).map((o) =>
-      Number(o.value)
+  const toggleSkill = (id: number) => {
+    setSkills((prev) =>
+      prev.includes(id)
+        ? prev.filter((s) => s !== id) // убрать
+        : [...prev, id] // добавить
     );
-    setSkills(selected);
   };
 
   const handleSave = async () => {
@@ -147,21 +141,25 @@ const ParticipantFormPage: React.FC = () => {
           </select>
         </div>
 
+        {/* ⭐ КАСТОМНЫЙ ВЫБОР НАВЫКОВ (ЧИПЫ) ⭐ */}
         <div className={styles.field}>
           <label className={styles.label}>Навыки:</label>
 
-          <select
-            multiple
-            className={styles.selectMultiple}
-            value={skills.map(String)}
-            onChange={handleSkillChange}
-          >
+          <div className={styles.skillsGrid}>
             {skillsList.map((s) => (
-              <option key={s.id} value={s.id}>
+              <div
+                key={s.id}
+                className={
+                  skills.includes(s.id)
+                    ? styles.skillChipActive
+                    : styles.skillChip
+                }
+                onClick={() => toggleSkill(s.id)}
+              >
                 {s.name}
-              </option>
+              </div>
             ))}
-          </select>
+          </div>
         </div>
 
         <div className={styles.field}>

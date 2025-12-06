@@ -26,7 +26,7 @@
 }
 
 .tag {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.25);
   padding: 0.3rem 0.8rem;
   border-radius: 8px;
   font-size: 0.9rem;
@@ -57,23 +57,42 @@
 .input,
 .select,
 .textarea {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   padding: 12px;
   color: white;
   font-size: 1rem;
+  outline: none;
 }
 
-.selectMultiple {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.3);
+/* ⭐ КРАСИВЫЕ ЧИПЫ НАВЫКОВ ⭐ */
+.skillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skillChip {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 12px;
-  padding: 12px;
-  min-height: 150px;
-  color: white;
-  font-size: 1rem;
-  overflow-y: auto;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.skillChip:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.skillChipActive {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #C042FF, #7A00C8);
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transform: scale(1.05);
+  transition: 0.2s ease;
 }
 
 .submitButton {
@@ -92,71 +111,4 @@
 .submitButton:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-/* ============ SELECT MULTIPLE ============ */
-.selectMultiple {
-  width: 100%;
-  min-height: 170px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 14px;
-  padding: 12px;
-  color: white;
-  font-size: 1rem;
-  outline: none;
-  cursor: pointer;
-
-  /* Красивый скролл */
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #C042FF rgba(255, 255, 255, 0.1);
-}
-
-.selectMultiple::-webkit-scrollbar {
-  width: 6px;
-}
-
-.selectMultiple::-webkit-scrollbar-thumb {
-  background: #C042FF;
-  border-radius: 8px;
-}
-
-.selectMultiple::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-/* ============ OPTION СТИЛИ ============ */
-
-.selectMultiple option {
-  padding: 10px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  font-size: 0.95rem;
-  transition: 0.2s ease;
-
-  /* Убираем уродливый outline */
-  outline: none;
-  border: none;
-}
-
-/* Hover эффект */
-.selectMultiple option:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-
-/* Выбранный вариант */
-.selectMultiple option:checked {
-  background: linear-gradient(135deg, #C042FF, #7A00C8);
-  color: white;
-  font-weight: 600;
-  transform: scale(1.02);
-}
-
-/* Active (клик) */
-.selectMultiple option:active {
-  background: #7A00C8;
 }

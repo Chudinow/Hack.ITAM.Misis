@@ -8,6 +8,7 @@ import OrganizerLayout from "../Shared/Layouts/OrganizerLayout/OrganizerLayout";
 import OrganizeAuthPage from "../Pages/OrganizeAuthPage/OrganizeAuthPage";
 import OrganizeHackathonPage from "../Pages/OrganizeHackathonPage/OrganizeHackathonPage";
 import OrganizeCreateHackPage from "../Pages/OrganizeCreateHackPage/OrganizeCreateHackPage";
+import CreateTeamPage from "../Pages/CreateTeamPage/CreateTeamPage";
 
 export const router = createBrowserRouter([
     {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
             {path:"hackdetails",element:<HackDetailsPage/>},
             {path:"listhack",element:<ListHackPage/>},
             {path:"profile",element:<ProfilePage/>},
+            { path: "team/create", element: <CreateTeamPage /> },
         ]
     },{
         path: "/organizer",

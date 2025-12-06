@@ -1,0 +1,80 @@
+.wrapper {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+
+.subtitle {
+  margin-top: 20px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.block {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  font-size: 16px;
+}
+
+.memberRow {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.inputSmall {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+}
+
+.removeBtn {
+  background: #ff4d4d;
+  border: none;
+  color: white;
+  width: 35px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addMemberBtn {
+  margin: 10px 0 20px;
+  padding: 10px;
+  background: #e6e6e6;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.checkboxRow {
+  margin: 20px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.createBtn {
+  padding: 12px 20px;
+  background: #000;
+  color: white;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 18px;
+  margin-top: 20px;
+}

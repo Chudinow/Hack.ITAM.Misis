@@ -1,50 +1,44 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./list-hack-page.module.css";
 import { Link } from "react-router-dom";
-import exampleImg from "../../Photos/1.png";
+import { HackAPI, Hack } from "../../Shared/api/HackApi"
 
 const ListHackPage: React.FC = () => {
+  const [hacks, setHacks] = useState<Hack[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await HackAPI.getUpcoming();
+        setHacks(res.hacks);
+      } catch (err) {
+        console.error("Ошибка загрузки хакатонов:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  if (loading) return <div className={styles.wrapper}><h1>Загрузка...</h1></div>;
+
   return (
     <div className={styles.wrapper}>
       <h1 className={styles.title}>Ближайшие Хакатоны</h1>
-      
+
       <div className={styles.cards}>
-        
-        <Link to="../hackdetails" className={styles.card}>
-          <img src={exampleImg} alt="hack-img" className={styles.image} />
+        {hacks.map(hack => (
+          <Link key={hack.id} to={`/hackdetails?id=${hack.id}`} className={styles.card}>
+            <img src={hack.photo_url} alt="hack-img" className={styles.image} />
 
-          <div className={styles.cardContent}>
-            <h2 className={styles.cardTitle}>Название</h2>
-            <p className={styles.cardText}>
-              описание крч оч интересное все такое классное реально респект
-              всем всех люблю уважаю поддерживаю ну или что-то другое
-            </p>
-          </div>
-        </Link>
-
-        <Link to="../hackdetails" className={styles.card}>
-          <img src={exampleImg} alt="hack-img" className={styles.image} />
-
-          <div className={styles.cardContent}>
-            <h2 className={styles.cardTitle}>Название</h2>
-            <p className={styles.cardText}>
-              описание крч оч интересное все такое классное реально респект
-              всем всех люблю уважаю поддерживаю ну или что-то другое
-            </p>
-          </div>
-        </Link>
-
-        <Link to="../hackdetails" className={styles.card}>
-          <img src={exampleImg} alt="hack-img" className={styles.image} />
-
-          <div className={styles.cardContent}>
-            <h2 className={styles.cardTitle}>Название</h2>
-            <p className={styles.cardText}>
-              описание крч оч интересное все такое классное реально респект
-              всем всех люблю уважаю поддерживаю ну или что-то другое
-            </p>
-          </div>
-        </Link>
+            <div className={styles.cardContent}>
+              <h2 className={styles.cardTitle}>{hack.name}</h2>
+              <p className={styles.cardText}>{hack.description}</p>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

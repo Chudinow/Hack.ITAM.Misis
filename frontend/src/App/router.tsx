@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
         children: [
             { index: true, element: <Navigate to="/main" replace /> },
             { path: "main", element: <MainPage /> },
-            { path: "hackdetails", element: <HackDetailsPage /> },
+            { path: "hackdetails/:id", element: <HackDetailsPage /> },
             { path: "listhack", element: <ListHackPage /> },
             { path: "profile", element: <ProfilePage /> },
             { path: "team/create", element: <CreateTeamPage /> },

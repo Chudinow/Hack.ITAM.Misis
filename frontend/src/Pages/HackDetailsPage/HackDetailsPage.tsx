@@ -1,58 +1,63 @@
 import styles from "./hack-details-page.module.css";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { HackAPI, Hack } from "../../Shared/api/HackApi";
 import { useEffect, useState } from "react";
 
 const HackDetailsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const hackId = params.get("id");
+  const { id } = useParams();
 
   const [hack, setHack] = useState<Hack | null>(null);
 
   useEffect(() => {
-    if (!hackId) return;
+    if (!id) return;
 
-    const load = async () => {
+    async function loadHack() {
       try {
-        const data = await HackAPI.getById(hackId);
+        const data = await HackAPI.getById(id!);
         setHack(data);
-      } catch (e) {
-        console.error("Ошибка загрузки:", e);
+      } catch (error) {
+        console.error("Ошибка загрузки хакатона:", error);
       }
-    };
+    }
 
-    load();
-  }, [hackId]);
+    loadHack();
+  }, [id]);
 
-  const handleParticipate = () => {
-    navigate(`/team/create?hackId=${hackId}`);
-  };
-
-  if (!hack) return <div className={styles.wrapper}><h1>Загрузка...</h1></div>;
+  if (!hack) {
+    return <div className={styles.loading}>Загрузка...</div>;
+  }
 
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.container}>
+    <div className={styles.page}>
 
-        <img src={hack.photo_url} alt="hack" className={styles.image} />
+      {/* КАРТИНКА-СЕКЦИЯ С ГРАДИЕНТОМ */}
+      <div className={styles.headerCard}>
+        <h1 className={styles.title}>{hack.name}</h1>
 
-        <div className={styles.info}>
-          <h1 className={styles.title}>{hack.name}</h1>
-
-          <p className={styles.label}>
-            <span>дата проведения:</span> {hack.start_date} — {hack.end_date}
-          </p>
-
-          <p className={styles.description}>
-            <span>Описание:</span> {hack.description}
-          </p>
-
-          <button className={styles.button} onClick={handleParticipate}>
-            участвовать
-          </button>
+        <div className={styles.tagRow}>
+          {hack.tags
+            ?.split(",")
+            .map(t => (
+              <span key={t.trim()} className={styles.tag}>
+                {t.trim()}
+              </span>
+            ))}
         </div>
+      </div>
 
+      {/* ОСНОВНОЙ КОНТЕНТ */}
+      <div className={styles.content}>
+        <p className={styles.description}>{hack.description}</p>
+
+        {/* КНОПКИ */}
+        <button className={styles.mainButton}>
+          Найти команду
+        </button>
+
+        <button className={styles.secondaryButton}>
+          У меня есть команда
+        </button>
       </div>
     </div>
   );

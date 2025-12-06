@@ -35,7 +35,7 @@ const MainPage: React.FC = () => {
 
         <div className={styles.buttons}>
 
-          {/* КНОПКА, КОТОРАЯ ПРОКРУЧИВАЕТ ВНИЗ */}
+          
           <button onClick={scrollToHacks} className={styles.buttonPrimary}>
             Начать
           </button>
@@ -47,7 +47,6 @@ const MainPage: React.FC = () => {
         </div>
       </div>
 
-      {/* СЕКЦИЯ ДЛЯ СКРОЛЛА */}
       <section ref={hackSectionRef} className={styles.hackSection}>
         <h2 className={styles.sectionTitle}>Ближайшие хакатоны</h2>
 
@@ -56,7 +55,7 @@ const MainPage: React.FC = () => {
         ) : (
           <div className={styles.hackList}>
             {upcoming.map((hack) => (
-              <Link key={hack.id} to={`/hack/${hack.id}`} className={styles.hackCard}>
+              <Link key={hack.id} to={`/hackdetails/${hack.id}`}  className={styles.hackCard}>
                 
                 <img src={hack.photo_url} className={styles.hackImage} />
 

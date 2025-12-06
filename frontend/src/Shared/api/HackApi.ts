@@ -5,7 +5,7 @@ const mockHacks: Hack[] = [
   {
     id: 1,
     name: "ITAM.courses Hack",
-    description: "Тестовый хакатон",
+    description: "Это не просто соревнование — это 48 часов чистого креатива, кофеина и коллаборации. Мы стираем границы между битами и реальностью. Собери свою команду мечты или найди ее здесь, чтобы создать прототип, который перевернет представление о цифровом взаимодействии.",
     photo_url: "https://picsum.photos/600/300?random=1",
     start_date: "2025-01-10",
     end_date: "2025-01-12",
@@ -14,7 +14,7 @@ const mockHacks: Hack[] = [
   {
     id: 2,
     name: "Tula HackDays",
-    description: "Пример хакатона",
+    description: "DataHack 2024 — это 36-часовое соревнование, направленное на решение практических задач в области анализа больших данных и машинного обучения. Участникам предстоит работать с реальными датасетами, предоставленными компаниями-партнерами из финтех-сектора.",
     photo_url: "https://picsum.photos/600/300?random=2",
     start_date: "2025-02-05",
     end_date: "2025-02-06",
@@ -70,7 +70,7 @@ export const HackAPI = {
 
   getById: async (hackId: number | string): Promise<Hack> => {
     if (MOCK) {
-      return mockHacks[0];
+      return mockHacks.find(h => h.id === Number(hackId))!;
     }
     const { data } = await apiInstance.get<Hack>(`/api/hack/${hackId}`);
     return data;

@@ -1,14 +1,9 @@
-/* ===== ОСНОВНАЯ СЕТКА СТРАНИЦЫ ===== */
-
 .page {
   width: 100%;
   position: relative;
-  z-index: 5; /* чтобы быть над звёздами из layout */
+  z-index: 5; 
   padding: 6rem 1.6rem 3rem;
 }
-
-
-/* ===== HERO БЛОК ===== */
 
 .hero {
   margin-top: 10rem;
@@ -29,9 +24,6 @@
   0% { opacity: 0; transform: translateY(25px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-
-
-/* ===== КНОПКИ ===== */
 
 .buttons {
   display: flex;
@@ -92,9 +84,6 @@
   transform: scale(0.97);
 }
 
-
-/* ===== БЛОК ХАКАТОНЫ ===== */
-
 .hackSection {
   margin-top: 4rem;
 }
@@ -104,7 +93,7 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
 
-  color: #D9A8FF; /* как ты просил */
+  color: #D9A8FF; 
   letter-spacing: 0.5px;
 }
 
@@ -163,9 +152,6 @@
   border-radius: 999px;
 }
 
-
-/* Кнопка “Посмотреть все” */
-
 .viewAll {
   margin-top: 2rem;
   display: block;
@@ -177,9 +163,6 @@
   color: #D9A8FF;
   font-weight: 600;
 }
-
-
-/* ===== DESKTOP ===== */
 
 @media (min-width: 900px) {
 

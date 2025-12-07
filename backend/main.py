@@ -1,4 +1,4 @@
-# main.py
+from server import app
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -26,7 +26,7 @@ app = FastAPI(
     
     ### Тестирование в Swagger:
     - После входа скопируйте `access_token` из ответа
-    - Нажмите **Authorize** вверху справа
+    - Нажмите **Authorize 🔒** вверху справа
     - Введите: `Bearer <ваш_token>`
     - Или используйте кнопку "Try it out" - браузер отправит куки
     

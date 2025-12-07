@@ -11,6 +11,7 @@ from .hackathon import (
     HackathonCreate,
     HackathonCreateWithPhoto,
     HackathonUpdate,
+    HackathonUpdateWithPhoto,
     HackathonResponse,
     TeamMemberResponse,
     TeamResponse,
@@ -19,6 +20,7 @@ from .hackathon import (
     TeamApproveResponse,
     AssignParticipantResponse,
     CSVExportResponse,
+    PhotoUploadResponse,
     ErrorResponse
 )
 
@@ -32,6 +34,7 @@ __all__ = [
     "HackathonCreate",
     "HackathonCreateWithPhoto",
     "HackathonUpdate",
+    "HackathonUpdateWithPhoto",
     "HackathonResponse",
     "TeamMemberResponse",
     "TeamResponse",
@@ -40,5 +43,6 @@ __all__ = [
     "TeamApproveResponse",
     "AssignParticipantResponse",
     "CSVExportResponse",
+    "PhotoUploadResponse",
     "ErrorResponse"
 ]

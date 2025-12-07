@@ -9,24 +9,36 @@ from .organizer import (
 from .hackathon import (
     HackathonBase,
     HackathonCreate,
+    HackathonCreateWithPhoto,
     HackathonUpdate,
     HackathonResponse,
     TeamMemberResponse,
     TeamResponse,
-    ParticipantResponse
+    ParticipantResponse,
+    AnalyticsResponse,
+    TeamApproveResponse,
+    AssignParticipantResponse,
+    CSVExportResponse,
+    ErrorResponse
 )
 
 __all__ = [
     "OrganizerBase",
-    "OrganizerCreate", 
+    "OrganizerCreate",
     "OrganizerLogin",
     "OrganizerResponse",
     "Token",
     "HackathonBase",
     "HackathonCreate",
+    "HackathonCreateWithPhoto",
     "HackathonUpdate",
     "HackathonResponse",
     "TeamMemberResponse",
     "TeamResponse",
-    "ParticipantResponse"
+    "ParticipantResponse",
+    "AnalyticsResponse",
+    "TeamApproveResponse",
+    "AssignParticipantResponse",
+    "CSVExportResponse",
+    "ErrorResponse"
 ]

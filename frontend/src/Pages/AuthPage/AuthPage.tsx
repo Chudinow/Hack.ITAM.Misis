@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./auth-page.module.css";
-import { UserAPI, TelegramAuthPayload } from "../../Shared/api/UserApi";
+import { UserAPI } from "../../Shared/api/UserApi";
+import type { TelegramAuthPayload } from "../../Shared/api/UserApi";
 
 declare global {
   interface Window {
-    onTelegramAuth?: (user: TelegramAuthPayload) => void;
+    onTelegramAuth?: (user: unknown) => void;
   }
 }
 
@@ -14,15 +15,18 @@ const AuthPage: React.FC = () => {
   const widgetRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    window.onTelegramAuth = async (user: TelegramAuthPayload) => {
+    window.onTelegramAuth = async (rawUser: unknown) => {
       try {
-        // Авторизация и установка HttpOnly cookie на сервере
+        // Приведение типов — Telegram SDK не типизирован
+        const user = rawUser as TelegramAuthPayload;
+
+        // 1) Авторизация. Бэкенд ставит HttpOnly cookie.
         await UserAPI.authTelegram(user);
 
-        // Проверяем валидность токена
+        // 2) Проверка того, что cookie корректно установлена.
         await UserAPI.checkAuth();
 
-        // Авторизован — ведём на главную
+        // 3) Успешная авторизация -> редирект.
         navigate("/main", { replace: true });
       } catch (error) {
         console.error("Ошибка Telegram авторизации:", error);
@@ -35,7 +39,7 @@ const AuthPage: React.FC = () => {
     script.src = "https://telegram.org/js/telegram-widget.js?22";
     script.async = true;
 
-    script.setAttribute("data-telegram-login", "AAAAAAAAAAAA"); // Укажи имя бота
+    script.setAttribute("data-telegram-login", "itamhackpay2win_bot");
     script.setAttribute("data-size", "large");
     script.setAttribute("data-radius", "16");
     script.setAttribute("data-userpic", "false");

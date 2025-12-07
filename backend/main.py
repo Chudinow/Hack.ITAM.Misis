@@ -26,7 +26,7 @@ app = FastAPI(
     
     ### Тестирование в Swagger:
     - После входа скопируйте `access_token` из ответа
-    - Нажмите **Authorize 🔒** вверху справа
+    - Нажмите **Authorize ** вверху справа
     - Введите: `Bearer <ваш_token>`
     - Или используйте кнопку "Try it out" - браузер отправит куки
     
@@ -47,8 +47,8 @@ app = FastAPI(
 # CORS с поддержкой кук
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Укажите адрес фронтенда
-    allow_credentials=True,  # Важно для кук!
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], 
+    allow_credentials=True, 
     allow_methods=["*"],
     allow_headers=["*"],
 )

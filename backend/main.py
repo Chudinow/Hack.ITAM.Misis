@@ -1,3 +1,4 @@
+# main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
@@ -13,17 +14,41 @@ from config import API_PREFIX
 
 app = FastAPI(
     title="Hackathon Platform API",
-    description="API для хакатонов - участники и организаторы",
+    description="""
+    API для хакатонов - участники и организаторы.
+    
+    ## Особенности авторизации:
+    
+    ### Для организаторов:
+    1. Выполните **POST /api/organizer/login** с логином и паролем
+    2. Сервер установит куки `access_token` и `user_id`
+    3. Все последующие запросы будут автоматически использовать эти куки
+    
+    ### Тестирование в Swagger:
+    - После входа скопируйте `access_token` из ответа
+    - Нажмите **Authorize** вверху справа
+    - Введите: `Bearer <ваш_token>`
+    - Или используйте кнопку "Try it out" - браузер отправит куки
+    
+    ### Публичные эндпоинты:
+    - Не требуют авторизации
+    - Доступны для всех пользователей
+    """,
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    swagger_ui_parameters={
+        "persistAuthorization": True,  # Сохраняет авторизацию при обновлении
+        "displayRequestDuration": True,  # Показывает время выполнения
+        "docExpansion": "none",  # Сворачивает все блоки
+    }
 )
 
-# CORS
+# CORS с поддержкой кук
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Укажите адрес фронтенда
+    allow_credentials=True,  # Важно для кук!
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -39,34 +64,48 @@ app.include_router(public_router, prefix=API_PREFIX)
 # Создаем папку для загрузок если не существует
 os.makedirs("uploads/hackathon_photos", exist_ok=True)
 
+
 @app.on_event("startup")
 async def startup():
     await db.connect()
 
+
 @app.on_event("shutdown")
 async def shutdown():
     await db.disconnect()
+
 
 @app.get("/")
 async def root():
     return {
         "message": "Hackathon Platform API",
         "docs": "/docs",
-        "organizer_endpoints": {
-            "auth": f"{API_PREFIX}/organizer/login",
-            "hackathons": f"{API_PREFIX}/organizer/hackathons",
-            "teams": f"{API_PREFIX}/organizer/hackathons/{{id}}/teams",
+        "api_prefix": API_PREFIX,
+        "auth_info": {
+            "type": "cookie-based (access_token) + Bearer token support",
+            "login_endpoint": f"{API_PREFIX}/organizer/login",
+            "register_endpoint": f"{API_PREFIX}/organizer/register",
+            "note": "После входа токен сохраняется в куках браузера"
         },
-        "public_endpoints": {
-            "hackathons": f"{API_PREFIX}/public/hackathons",
-            "teams": f"{API_PREFIX}/public/hackathons/{{id}}/teams",
-            "participants": f"{API_PREFIX}/public/hackathons/{{id}}/participants"
+        "endpoints": {
+            "organizer": {
+                "auth": f"{API_PREFIX}/organizer/login",
+                "hackathons": f"{API_PREFIX}/organizer/hackathons",
+                "teams": f"{API_PREFIX}/organizer/hackathons/{{id}}/teams",
+            },
+            "public": {
+                "hackathons": f"{API_PREFIX}/public/hackathons",
+                "teams": f"{API_PREFIX}/public/hackathons/{{id}}/teams",
+                "participants": f"{API_PREFIX}/public/hackathons/{{id}}/participants"
+            }
         }
     }
+
 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
 
 if __name__ == "__main__":
     import uvicorn

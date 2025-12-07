@@ -6,7 +6,6 @@ import { HackAPI, Hack } from "../../Shared/api/HackApi"
 const MainPage: React.FC = () => {
   const [upcoming, setUpcoming] = useState<Hack[]>([]);
   const [loading, setLoading] = useState(true);
-  console.log("BASE URL =", import.meta.env.VITE_API_URL);
 
   const hackSectionRef = useRef<HTMLDivElement | null>(null);
 

@@ -16,7 +16,7 @@ class UserModel(Base):
     name: Mapped[str] = mapped_column(String(64))
     avatar_url: Mapped[str] = mapped_column(Text)
 
-    profile: Mapped[list["ProfileModel"]] = relationship(
+    profiles: Mapped[list["ProfileModel"]] = relationship(
         "ProfileModel", back_populates="user", lazy="selectin"
     )
     team_members: Mapped[list["TeamMemberModel"]] = relationship(
@@ -24,16 +24,32 @@ class UserModel(Base):
     )
 
 
+class RoleType(PyEnum):
+    BACKEND = "backend"
+    FRONTEND = "frontend"
+    MOBILE = "mobile"
+    ML = "ml"
+    PRODUCT = "product"
+    DESIGNER = "designer"
+
+
 class ProfileModel(Base):
     __tablename__ = "profiles"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    role: Mapped[RoleType] = mapped_column(
+        PQEnum(RoleType, create_type=True),
+        nullable=False,
+    )
     about: Mapped[str] = mapped_column(String(512))
 
     user: Mapped["UserModel"] = relationship("UserModel", back_populates="profiles", lazy="joined")
     profile_skills: Mapped[list["ProfileSkillModel"]] = relationship(
         "ProfileSkillModel", back_populates="profile", lazy="selectin"
+    )
+    participants: Mapped[list["ParticipantsModel"]] = relationship(
+        "ParticipantsModel", back_populates="profile", lazy="selectin"
     )
 
 
@@ -108,6 +124,9 @@ class HackathonModel(Base):
     teams: Mapped[list["TeamModel"]] = relationship(
         "TeamModel", back_populates="hackathon", lazy="selectin"
     )
+    participants: Mapped[list["ParticipantsModel"]] = relationship(
+        "ParticipantsModel", back_populates="hackathon", lazy="selectin"
+    )
 
 
 class TeamModel(Base):
@@ -116,6 +135,7 @@ class TeamModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     hackathon_id: Mapped[int] = mapped_column(ForeignKey("hackathons.id"), index=True)
     name: Mapped[str] = mapped_column(String(32), index=True)
+    about: Mapped[str] = mapped_column(String(512))
     is_completed: Mapped[bool] = mapped_column(Boolean)
     # по-хорошему сюда надо наебашить approved, чтобы организатор мог принимать или нет команды
 
@@ -127,14 +147,6 @@ class TeamModel(Base):
     )
 
 
-class RoleType(PyEnum):
-    BACKEND = "backend"
-    FRONTEND = "frontend"
-    MOBILE = "mobile"
-    ML = "ml"
-    PRODUCT = "product"
-
-
 class TeamMemberModel(Base):
     __tablename__ = "team_members"
 
@@ -143,13 +155,27 @@ class TeamMemberModel(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
     role: Mapped[RoleType] = mapped_column(
         PQEnum(RoleType, create_type=True),
-        nullable=False,
+        nullable=True,
     )
-    approved: Mapped[bool] = mapped_column(Boolean)
 
     team: Mapped["TeamModel"] = relationship(
         "TeamModel", back_populates="team_members", lazy="joined"
     )
     user: Mapped["UserModel"] = relationship(
         "UserModel", back_populates="team_members", lazy="joined"
+    )
+
+
+class ParticipantsModel(Base):
+    __tablename__ = "participants"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    hackathon_id: Mapped[int] = mapped_column(ForeignKey("hackathons.id"), index=True)
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), index=True)
+
+    hackathon: Mapped["HackathonModel"] = relationship(
+        "HackathonModel", back_populates="participants", lazy="joined"
+    )
+    profile: Mapped["ProfileModel"] = relationship(
+        "ProfileModel", back_populates="participants", lazy="joined"
     )

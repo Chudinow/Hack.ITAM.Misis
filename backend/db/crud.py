@@ -3,8 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
     HackathonModel,
+    ParticipantsModel,
     ProfileModel,
     ProfileSkillModel,
+    RoleType,
     SkillModel,
     TeamMemberModel,
     TeamModel,
@@ -52,30 +54,50 @@ async def get_users_by_ids(session: AsyncSession, ids: list[int]) -> list[UserMo
     return result.scalars().all()
 
 
-async def create_team_with_members(
+async def create_team(
     session: AsyncSession,
     name: str,
     hack_id: int,
-    members: list[dict],
-    is_completed: bool,
-) -> tuple[TeamModel, list[TeamMemberModel]]:
-    """members: список словарей вида {'user_id': int, 'role': RoleType, 'approved': bool}"""
-    team = TeamModel(name=name, is_completed=is_completed, hackathon_id=hack_id)
+    creator_id: int,
+    find_roles: list[RoleType],
+    about: str,
+) -> TeamModel:
+    team = TeamModel(name=name, is_completed=False, hackathon_id=hack_id, about=about)
     session.add(team)
     await session.flush()
 
-    team_members = []
-    for member in members:
-        tm = TeamMemberModel(
-            team_id=team.id,
-            user_id=member["user_id"],
-            role=member["role"],
-            approved=member["approved"],
-        )
-        session.add(tm)
-        team_members.append(tm)
+    team_member = TeamMemberModel(team_id=team.id, user_id=creator_id)
+    session.add(team_member)
+
+    for find_role in find_roles:
+        team_member = TeamMemberModel(team_id=team.id, user_id=0, role=find_role)
+        session.add(team_member)
+
     await session.commit()
-    return team, team_members
+    return team
+
+
+async def get_team_by_hack_user(session: AsyncSession, hack_id: int, user_id: int) -> TeamModel:
+    q = (
+        select(TeamModel)
+        .join(TeamMemberModel, TeamModel.id == TeamMemberModel.team_id)
+        .where(TeamModel.hackathon_id == hack_id, TeamMemberModel.user_id == user_id)
+    )
+    result = await session.execute(q)
+    return result.scalars().first()
+
+
+async def get_team_creator(session: AsyncSession, team_id: int) -> UserModel | None:
+    result = await session.execute(
+        select(TeamMemberModel)
+        .where(TeamMemberModel.team_id == team_id, TeamMemberModel.user_id != 0)
+        .order_by(TeamMemberModel.id)
+        .limit(1)
+    )
+    member = result.scalars().first()
+    if member:
+        return await get_user_by_id(session, member.user_id)
+    return None
 
 
 async def get_team_members_by_team_id(session: AsyncSession, team_id: int) -> list[TeamMemberModel]:
@@ -198,6 +220,17 @@ async def update_profile_about(
     return profile
 
 
+async def update_profile_role(
+    session: AsyncSession, profile: ProfileModel, role: str
+) -> ProfileModel:
+    profile.role = role or ""
+    session.add(profile)
+    await session.flush()
+    await session.refresh(profile)
+    await session.commit()
+    return profile
+
+
 async def set_profile_skills(session: AsyncSession, profile_id: int, skill_ids: list[int]) -> None:
     existing_q = await session.execute(
         select(ProfileSkillModel.skill_id).where(ProfileSkillModel.profile_id == profile_id)
@@ -262,3 +295,12 @@ async def get_teams_with_empty_members(session: AsyncSession, hackathon_id: int 
             teams[team.id] = {"team": team, "members": []}
         teams[team.id]["members"].append(member)
     return list(teams.values())
+
+
+async def get_participants_by_hack_id(
+    session: AsyncSession, hack_id: int
+) -> list[ParticipantsModel]:
+    result = await session.execute(
+        select(ParticipantsModel).where(ParticipantsModel.hackathon_id == hack_id)
+    )
+    return result.scalars().all()

@@ -1,47 +1,56 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from db import crud, get_session
+from utils import jwt_required
 
 from .schema import (
     EmptyRoleSchema,
+    ParticipantSchema,
+    ParticipantsListSchema,
+    ProfileSchema,
     TeamCreateSchema,
-    TeamMemberCreateSchema,
-    TeamMemberResponseSchema,
     TeamResponseSchema,
     TeamWithEmptyRolesSchema,
 )
 
-router = APIRouter(prefix="/api/hack/{hack_id}/team", tags=["team"])
-
-# капитаном команды будет тот человек, который первый в списке участников, т.е. тот, кто ее регистрировал
-# менять состав может только капитан
-# если айди у мембера не указан, значит команда ищет человека с такой ролью
+router = APIRouter(prefix="/api/hack/{hack_id}", tags=["team"])
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/team/", status_code=status.HTTP_201_CREATED)
+@jwt_required
 async def create_team(
-    hack_id: int, payload: TeamCreateSchema, db: AsyncSession = Depends(get_session)
+    hack_id: int, user_id: int, payload: TeamCreateSchema, db: AsyncSession = Depends(get_session)
 ) -> TeamResponseSchema:
-    team, members = await crud.create_team_with_members(
+    if await crud.get_team_by_hack_user(db, hack_id, user_id) is not None:
+        raise HTTPException(HTTP_409_CONFLICT, detail="уже в команде/создал команду")
+
+    team = await crud.create_team(
         session=db,
+        hack_id=hack_id,
+        creator_id=user_id,
         name=payload.name,
-        hack_id=payload.hackathon_id,
-        member_ids=[member.user_id for member in payload.member_ids],
-        roles=[member.role for member in payload.member_ids],
-        is_completed=payload.is_completed,
+        find_roles=payload.find_roles,
+        about=payload.about,
     )
 
-    return TeamResponseSchema(
-        id=team.id,
-        name=team.name,
-        hackathon_id=team.hackathon_id,
-        is_completed=team.is_completed,
-        members=members,
-    )
+    return TeamResponseSchema(id=team.id, name=team.name)
 
 
-@router.get("/{team_id}")
+@router.get("/team/")
+@jwt_required
+async def get_user_team(
+    hack_id: int, user_id: int, db: AsyncSession = Depends(get_session)
+) -> TeamResponseSchema:
+    team = await crud.get_team_by_hack_user(db, hack_id, user_id)
+    if team is None:
+        raise HTTPException(HTTP_404_NOT_FOUND, detail="нету команды у тебя братиш")
+
+    return TeamResponseSchema(id=team.id, name=team.name)
+
+
+@router.get("/team/{team_id}")
 async def get_team(
     hack_id: int, team_id: int, db: AsyncSession = Depends(get_session)
 ) -> TeamResponseSchema:
@@ -60,7 +69,7 @@ async def get_team(
 
 
 @router.get(
-    "/search/empty",
+    "/teams/search",
     response_model=list[TeamWithEmptyRolesSchema],
 )
 async def search_teams_with_empty_members(hack_id: int, db: AsyncSession = Depends(get_session)):
@@ -74,8 +83,29 @@ async def search_teams_with_empty_members(hack_id: int, db: AsyncSession = Depen
                 id=team.id,
                 name=team.name,
                 hackathon_id=team.hackathon_id,
-                is_completed=team.is_completed,
+                about=team.about,
                 empty_roles=empty_roles,
             )
         )
     return result
+
+
+@router.get("/participants/search", response_model=ParticipantsListSchema)
+async def search_ParticipantsListSchema(hack_id: int, db: AsyncSession = Depends(get_session)):
+    participants = await crud.get_participants_by_hack_id(db, hack_id)
+
+    return ParticipantsListSchema(
+        participants=[
+            ParticipantSchema(
+                id=par.id,
+                profile=ProfileSchema(
+                    id=par.profile.id,
+                    user_id=par.profile.user_id,
+                    about=par.profile.about,
+                    role=par.profile.role,
+                    skills=par.profile.profile_skills,
+                ),
+            )
+            for par in participants
+        ]
+    )

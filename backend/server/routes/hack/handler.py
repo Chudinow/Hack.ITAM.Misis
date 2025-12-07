@@ -8,10 +8,10 @@ from db import crud, get_session
 
 from .schema import HackListSchema, HackSchema, MetaSchema
 
-router = APIRouter(prefix="/api/hack", tags=["hackathon"])
+router = APIRouter(prefix="/api", tags=["hackathon"])
 
 
-@router.get("/{hack_id}")
+@router.get("/hack/{hack_id}")
 async def get_hack_by_id(hack_id: int, session: AsyncSession = Depends(get_session)) -> HackSchema:
     hack = await crud.get_hack_by_id(session, hack_id)
     if hack is None:
@@ -28,7 +28,7 @@ async def get_hack_by_id(hack_id: int, session: AsyncSession = Depends(get_sessi
     )
 
 
-@router.get("/all")
+@router.get("/hacks/all")
 async def get_all_hacks(
     page: int = Query(1, ge=1),  # 1 <= page
     per_page: int = Query(20, ge=1, le=50),  # 1 <= per_page <= 50
@@ -75,9 +75,10 @@ async def get_all_hacks(
     )
 
 
-@router.get("/upcoming")
+@router.get("/hacks/upcoming")
 async def get_upcoming_hacks(session: AsyncSession = Depends(get_session)) -> HackListSchema:
     hacks = await crud.get_upcoming_hacks(session)
+
     return HackListSchema(
         hacks=[
             HackSchema(
@@ -90,5 +91,6 @@ async def get_upcoming_hacks(session: AsyncSession = Depends(get_session)) -> Ha
                 tags=hack.tags,
             )
             for hack in hacks
-        ]
+        ],
+        meta=MetaSchema(total=len(hacks), page=1, per_page=len(hacks), total_pages=1),
     )

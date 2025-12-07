@@ -10,9 +10,9 @@ from server.routes import hack_router, team_router, user_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # await db.connect()
+    await db.connect()
     yield
-    # await db.disconnect()
+    await db.disconnect()
 
 
 app = FastAPI(

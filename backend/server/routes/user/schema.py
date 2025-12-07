@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from db.models import SkillType
+from db.models import RoleType, SkillType
 
 
 class TelegramAuthPayload(BaseModel):
@@ -28,6 +28,7 @@ class UserSchema(BaseModel):
 class EditProfileSchema(BaseModel):
     user_id: int
     about: str | None = None
+    role: RoleType
     skills_id: list[int]
 
 
@@ -45,4 +46,5 @@ class ProfileSchema(BaseModel):
     id: int
     user_id: int
     about: str
+    role: RoleType
     skills: list[SkillSchema]

@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 from db.models import RoleType
 
-from ...user.schema import UserSchema
+from ...user.schema import ProfileSchema, UserSchema
 
 
 class TeamMemberCreateSchema(BaseModel):
@@ -12,9 +12,11 @@ class TeamMemberCreateSchema(BaseModel):
 
 class TeamCreateSchema(BaseModel):
     name: str = Field(min_length=4, max_length=64)
-    hackathon_id: int
-    member_ids: list[TeamMemberCreateSchema]
-    is_completed: bool
+    find_roles: list[RoleType]
+    about: str
+
+    # member_ids: list[TeamMemberCreateSchema] бля поле просто иди нахуй
+    # is_completed: bool всегда
 
 
 class TeamMemberResponseSchema(BaseModel):
@@ -27,9 +29,6 @@ class TeamMemberResponseSchema(BaseModel):
 class TeamResponseSchema(BaseModel):
     id: int
     name: str
-    hackathon_id: int
-    is_completed: bool
-    members: list[TeamMemberResponseSchema]
 
 
 class EmptyRoleSchema(BaseModel):
@@ -40,5 +39,14 @@ class TeamWithEmptyRolesSchema(BaseModel):
     id: int
     name: str
     hackathon_id: int
-    is_completed: bool
+    about: str
     empty_roles: list[EmptyRoleSchema]
+
+
+class ParticipantSchema(BaseModel):
+    id: int
+    profile: ProfileSchema
+
+
+class ParticipantsListSchema(BaseModel):
+    participants: list[ParticipantSchema]

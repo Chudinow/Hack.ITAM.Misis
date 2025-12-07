@@ -1,4 +1,3 @@
-from server import app
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os

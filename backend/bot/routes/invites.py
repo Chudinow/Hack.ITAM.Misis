@@ -2,7 +2,6 @@ from aiogram import Router
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from bot import bot
 from db import crud
 from db.models import InviteStatusEnum, InviteTypeEnum
 
@@ -29,16 +28,18 @@ async def send_team_invite(
         return False, "Участнику уже отправлено приглашение."
 
     await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.INVITE)
+    await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.INVITE)
 
     team = await crud.get_team_by_id(db_session, team_id)
     participant = await crud.get_participant_by_id(db_session, participant_id)
+
+    from bot import bot
 
     await bot.send_message(
         participant.profile.user.telegram_id,
         f"Вы приглащшены в команду {team.name}",
         reply_markup=invite_keyboard,
     )
-
     return True, "Приглашение отправлено."
 
 
@@ -55,6 +56,8 @@ async def send_join_request(
     creator = await crud.get_team_creator(db_session, team_id)
     team = await crud.get_team_by_id(db_session, team_id)
     participant = await crud.get_participant_by_id(db_session, participant_id)
+    from bot import bot
+
     await bot.send_message(
         creator.telegram_id,
         f"К вам в {team.name} хочет {participant.profile.user.name}",

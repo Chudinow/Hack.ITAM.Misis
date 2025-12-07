@@ -1,8 +1,8 @@
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
-from routes import invite_router
 
 from bot.mw import DBSessionMiddleware, ErrorMiddleware
+from bot.routes import invite_router
 from config import TG_BOT_TOKEN
 from db import db
 

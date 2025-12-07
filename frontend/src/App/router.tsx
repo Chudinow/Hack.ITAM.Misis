@@ -10,7 +10,7 @@ import OrganizeCreateHackPage from "../Pages/OrganizeCreateHackPage/OrganizeCrea
 
 import MainLayout from "../Shared/Layouts/MainLayout/MainLayout";
 import AuthPage from "../Pages/AuthPage/AuthPage";
-import RequireAuth from "../Shared/AuthGuard";
+import RequireAuth from "../Shared/RequireAuth";
 
 import ParticipantFormPage from '../Pages/ParticipantFormPage/ParticipantFormPage'
 import TeamFormPage from '../Pages/TeamFormPage/TeamFormPage'

@@ -99,6 +99,17 @@ export const UserAPI = {
     );
     return data;
   },
+    /**
+   * Проверка авторизации
+   * GET /api/user/auth
+   * Возвращает User или 401
+   */
+  checkAuth: async (): Promise<User> => {
+    const { data } = await apiInstance.get<User>("/api/user/auth", {
+      withCredentials: true,
+    });
+    return data;
+  },
 
   /**
    * Список всех навыков

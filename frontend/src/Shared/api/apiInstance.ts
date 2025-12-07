@@ -1,25 +1,25 @@
 import axios from "axios";
 
 export const apiInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL, // обязательно читать из .env
+  withCredentials: true,                 // обязательно для cookie JWT
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-apiInstance.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
+/**
+ * Глобальный обработчик ошибок
+ * Он не ломает THEN/CATCH и не поглощает ошибку
+ */
 apiInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Простой вывод для отладки
     console.error("API error:", error);
-    throw error;
+
+    // Пробрасываем ошибку дальше → попадёт в catch()
+    return Promise.reject(error);
   }
 );
+

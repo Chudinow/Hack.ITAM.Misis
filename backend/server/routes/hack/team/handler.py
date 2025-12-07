@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
+from bot.routes.invites import send_join_request, send_team_invite
 from db import crud, get_session
 from utils import jwt_required
 
@@ -109,3 +111,30 @@ async def search_ParticipantsListSchema(hack_id: int, db: AsyncSession = Depends
             for par in participants
         ]
     )
+
+
+# приглашение участника в команду
+@router.post("/team/{team_id}/invite", status_code=status.HTTP_200_OK)
+@jwt_required
+async def invite_participant_to_team(
+    hack_id: int,
+    team_id: int,
+    participant_id: int,
+    db: AsyncSession = Depends(get_session),
+) -> dict:
+    success, message = await send_team_invite(team_id, participant_id, db)
+    if not success:
+        raise HTTPException(HTTP_409_CONFLICT, detail=message)
+    return {"detail": message}
+
+
+# подача заявки на вступление в команду
+@router.post("/team/{team_id}/apply", status_code=status.HTTP_200_OK)
+@jwt_required
+async def apply_participant_to_team(
+    hack_id: int, team_id: int, participant_id: int, db: AsyncSession = Depends(get_session)
+) -> dict:
+    success, message = await send_join_request(team_id, participant_id, db)
+    if not success:
+        raise HTTPException(HTTP_409_CONFLICT, detail=message)
+    return {"detail": message}

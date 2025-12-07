@@ -1,8 +1,51 @@
+# swagger.yaml
+openapi: 3.0.3
+info:
+  title: Hackathon Platform API
+  description: |
+    API для хакатонов - участники и организаторы.
+    
+    ## Особенности авторизации:
+    
+    ### Для организаторов:
+    1. Выполните **POST /api/organizer/login** с логином и паролем
+    2. Сервер установит куки `access_token` и `user_id`
+    3. Все последующие запросы будут автоматически использовать эти куки
+    
+    ### Тестирование в Swagger:
+    - После входа скопируйте `access_token` из ответа
+    - Нажмите **Authorize ** вверху справа
+    - Введите: `Bearer <ваш_token>`
+    
+    ### Публичные эндпоинты:
+    - Не требуют авторизации
+    - Доступны для всех пользователей
+  version: 1.0.0
+  contact:
+    name: Hackathon Team
+    email: support@hackathon.example.com
+
+servers:
+  - url: http://localhost:8003
+    description: Локальный сервер разработки
+  - url: https://api.hackathon.example.com
+    description: Продакшен сервер
+
 paths:
-  /organizers/login:
+  # ==================== АВТОРИЗАЦИЯ ОРГАНИЗАТОРА ====================
+  /api/organizer/login:
     post:
+      tags:
+        - organizer_auth
       summary: Вход для организатора
-      tags: [Организатор]
+      description: |
+        Аутентификация организатора по логину и паролю.
+        
+        **Устанавливает куки:**
+        - `access_token`: JWT токен (httpOnly, 30 минут)
+        - `user_id`: ID организатора (30 минут)
+        
+        **Также возвращает токен в теле ответа** для использования в заголовках.
       requestBody:
         required: true
         content:
@@ -11,40 +54,127 @@ paths:
               $ref: '#/components/schemas/OrganizerLogin'
       responses:
         '200':
-          description: Успешный вход
+          description: Успешный вход, устанавливает куки и возвращает JWT токен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Устанавливает куки access_token и user_id
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/register:
+    post:
+      tags:
+        - organizer_auth
+      summary: Регистрация нового организатора
+      description: Создает нового организатора с указанными учетными данными.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizerLogin'
+      responses:
+        '200':
+          description: Организатор успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '400':
+          description: Организатор с таким логином уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/me:
+    get:
+      tags:
+        - organizer_auth
+      summary: Получить информацию о текущем организаторе
+      description: Возвращает информацию о текущем аутентифицированном организаторе
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Информация об организаторе успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizerResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/logout:
+    post:
+      tags:
+        - organizer_auth
+      summary: Выход
+      description: Удаляет аутентификационные куки
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Успешный выход
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  access_token:
+                  message:
                     type: string
-                  token_type:
-                    type: string
-                  organizer:
-                    $ref: '#/components/schemas/Organizer'
+                    example: "Успешный выход из системы"
 
-  /organizer/hackathons:
+  # ==================== УПРАВЛЕНИЕ ХАКАТОНАМИ ====================
+  /api/organizer/hackathons:
     get:
-      summary: Получить все хакатоны текущего организатора
-      tags: [Организатор]
+      tags:
+        - organizer_hackathons
+      summary: Получить все хакатоны организатора
+      description: Возвращает список всех хакатонов, созданных текущим организатором
       security:
         - bearerAuth: []
+        - cookieAuth: []
       responses:
         '200':
-          description: Список хакатонов
+          description: Список хакатонов успешно получен
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/HackathonResponse'
-    
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     post:
-      summary: Создать новый хакатон
-      tags: [Организатор]
+      tags:
+        - organizer_hackathons
+      summary: Создать новый хакатон (JSON)
+      description: Создает новый хакатон с указанными параметрами (JSON запрос)
       security:
         - bearerAuth: []
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -53,46 +183,175 @@ paths:
               $ref: '#/components/schemas/HackathonCreate'
       responses:
         '201':
-          description: Хакатон создан
+          description: Хакатон успешно создан
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HackathonResponse'
-  
- 
-  /organizer/hackathons/{hackathonId}:
-    get:
-      summary: Получить хакатон по ID
-      tags: [Организатор]
+        '400':
+          description: Некорректные данные (даты, размеры команд)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/create-with-photo:
+    post:
+      tags:
+        - organizer_hackathons
+      summary: Создать хакатон с фото (Form Data)
+      description: |
+        Создает новый хакатон с загрузкой фото в одном запросе.
+        
+        **Поля формы (multipart/form-data):**
+        - `name`: Название хакатона (обязательно)
+        - `description`: Описание хакатона (обязательно)
+        - `start_date`: Дата начала в формате YYYY-MM-DD (обязательно)
+        - `end_date`: Дата окончания в формате YYYY-MM-DD (обязательно)
+        - `tags`: Теги через запятую (необязательно)
+        - `max_teams`: Максимальное количество команд (по умолчанию 20)
+        - `min_team_size`: Минимальный размер команды (по умолчанию 2)
+        - `max_team_size`: Максимальный размер команды (по умолчанию 5)
+        - `photo`: Файл изображения (необязательно)
       security:
         - bearerAuth: []
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - name
+                - description
+                - start_date
+                - end_date
+              properties:
+                name:
+                  type: string
+                  description: Название хакатона
+                description:
+                  type: string
+                  description: Описание хакатона
+                start_date:
+                  type: string
+                  format: date
+                  description: Дата начала в формате YYYY-MM-DD
+                end_date:
+                  type: string
+                  format: date
+                  description: Дата окончания в формате YYYY-MM-DD
+                tags:
+                  type: string
+                  description: Теги через запятую
+                max_teams:
+                  type: integer
+                  default: 20
+                  minimum: 1
+                  description: Максимальное количество команд
+                min_team_size:
+                  type: integer
+                  default: 2
+                  minimum: 1
+                  description: Минимальный размер команды
+                max_team_size:
+                  type: integer
+                  default: 5
+                  minimum: 1
+                  description: Максимальный размер команды
+                photo:
+                  type: string
+                  format: binary
+                  description: Фото хакатона (необязательно)
+      responses:
+        '201':
+          description: Хакатон успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HackathonResponse'
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}:
+    get:
+      tags:
+        - organizer_hackathons
+      summary: Получить хакатон по ID
+      description: Возвращает информацию о конкретном хакатоне по его ID
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
       parameters:
-        - name: hackathonId
+        - name: hackathon_id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+          description: ID хакатона
       responses:
         '200':
-          description: Данные хакатона
+          description: Хакатон успешно получен
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/HackathonResponse'
-    
+        '403':
+          description: Нет прав доступа к этому хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     patch:
-      summary: Обновить хакатон
-      tags: [Организатор]
+      tags:
+        - organizer_hackathons
+      summary: Обновить информацию о хакатоне (PATCH)
+      description: |
+        Частично обновляет информацию о хакатоне.
+        
+        **Поля для обновления (все необязательные):**
+        - `name`: Название хакатона
+        - `description`: Описание хакатона
+        - `start_date`: Дата начала
+        - `end_date`: Дата окончания
+        - `tags`: Теги через запятую
+        - `max_teams`: Максимальное количество команд
+        - `min_team_size`: Минимальный размер команды
+        - `max_team_size`: Максимальный размер команды
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
-        - name: hackathonId
+        - name: hackathon_id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+          description: ID хакатона
       requestBody:
         required: true
         content:
@@ -101,155 +360,1018 @@ paths:
               $ref: '#/components/schemas/HackathonUpdate'
       responses:
         '200':
-          description: Хакатон обновлен
-  
+          description: Хакатон успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HackathonResponse'
+        '400':
+          description: Некорректные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав доступа к этому хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /organizer/hackathons/{hackathonId}/photo:
-    post:
-      summary: Загрузить фото для хакатона
-      tags: [Организатор]
+    delete:
+      tags:
+        - organizer_hackathons
+      summary: Удалить хакатон
+      description: Удаляет хакатон и все связанные с ним данные
       security:
         - bearerAuth: []
+        - cookieAuth: []
       parameters:
-        - name: hackathonId
+        - name: hackathon_id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+          description: ID хакатона
+      responses:
+        '204':
+          description: Хакатон успешно удален
+        '403':
+          description: Нет прав доступа к этому хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/photo:
+    post:
+      tags:
+        - organizer_hackathons
+      summary: Загрузить фото для хакатона
+      description: |
+        Загружает и сохраняет фотографию для хакатона.
+        
+        **Формат запроса:** multipart/form-data
+        **Обязательное поле:** `photo` - файл изображения
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
       requestBody:
         required: true
         content:
           multipart/form-data:
             schema:
               type: object
+              required:
+                - photo
               properties:
                 photo:
                   type: string
                   format: binary
-  
-
-  /organizer/hackathons/{hackathonId}/teams:
-    get:
-      summary: Получить все команды хакатона
-      tags: [Организатор]
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: hackathonId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+                  description: Файл изображения для хакатона
       responses:
         '200':
-          description: Список команд с участниками
-  
+          description: Фото успешно загружено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhotoUploadResponse'
+        '400':
+          description: Файл не является изображением
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав доступа к этому хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /organizer/hackathons/{hackathonId}/participants:
     get:
-      summary: Получить участников хакатона
-      tags: [Организатор]
-      security:
-        - bearerAuth: []
+      tags:
+        - organizer_hackathons
+      summary: Получить фото хакатона
+      description: Возвращает файл фото хакатона
       parameters:
-        - name: hackathonId
+        - name: hackathon_id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            type: integer
+          description: ID хакатона
+      responses:
+        '200':
+          description: Фото хакатона
+          content:
+            image/*: {}
+        '404':
+          description: Хакатон не найден или фото отсутствует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - organizer_hackathons
+      summary: Удалить фото хакатона
+      description: Удаляет фото хакатона с сервера и из базы данных
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+      responses:
+        '204':
+          description: Фото успешно удалено
+        '403':
+          description: Нет прав доступа к этому хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден или фото отсутствует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== УПРАВЛЕНИЕ КОМАНДАМИ ====================
+  /api/organizer/hackathons/{hackathon_id}/teams:
+    get:
+      tags:
+        - organizer_teams
+      summary: Получить все команды хакатона
+      description: Возвращает список всех команд хакатона с информацией об участниках
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+      responses:
+        '200':
+          description: Список команд успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/participants:
+    get:
+      tags:
+        - organizer_teams
+      summary: Получить участников хакатона
+      description: Возвращает участников хакатона с фильтрацией по наличию команды
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
         - name: team_status
           in: query
+          required: false
           schema:
             type: string
             enum: [with_team, without_team]
+          description: Фильтр по наличию команды
+      responses:
+        '200':
+          description: Список участников успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantResponse'
+        '400':
+          description: Некорректный параметр team_status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/analytics:
+    get:
+      tags:
+        - organizer_teams
+      summary: Получить аналитику хакатона
+      description: Возвращает статистику по хакатону: количество команд, участников, распределение по ролям и т.д.
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+      responses:
+        '200':
+          description: Аналитика успешно получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsResponse'
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/export/csv:
+    get:
+      tags:
+        - organizer_teams
+      summary: Экспортировать команды в CSV (скачать файл)
+      description: Скачивает CSV файл с данными о командах и участниках хакатона
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+      responses:
+        '200':
+          description: CSV файл успешно сгенерирован
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: Имя файла для скачивания
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/teams/{team_id}/approve:
+    post:
+      tags:
+        - organizer_teams
+      summary: Одобрить или отклонить команду
+      description: Изменяет статус одобрения всех участников команды
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+        - name: team_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID команды
+        - name: approve
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: true - одобрить, false - отклонить
+      responses:
+        '200':
+          description: Статус команды успешно изменен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamApproveResponse'
+        '400':
+          description: Команда не принадлежит хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон или команда не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/organizer/hackathons/{hackathon_id}/participants/{user_id}/assign:
+    post:
+      tags:
+        - organizer_teams
+      summary: Вручную распределить участника в команду
+      description: Добавляет участника в команду с указанной ролью
+      security:
+        - bearerAuth: []
+        - cookieAuth: []
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID пользователя
+        - name: team_id
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ID команды
+        - name: role
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [backend, frontend, mobile, ml, product]
+          description: Роль участника в команде
+      responses:
+        '200':
+          description: Участник успешно распределен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssignParticipantResponse'
+        '400':
+          description: |
+            Некорректные данные:
+            - пользователь уже в команде
+            - команда заполнена
+            - неверная роль
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав доступа к хакатону
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Хакатон, команда или пользователь не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ==================== ПУБЛИЧНЫЕ ЭНДПОИНТЫ ====================
+  /api/public/hackathons:
+    get:
+      tags:
+        - public
+      summary: Получить список всех хакатонов
+      description: Возвращает список всех доступных хакатонов
+      parameters:
+        - name: upcoming_only
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: Только предстоящие хакатоны
+      responses:
+        '200':
+          description: Список хакатонов успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    name:
+                      type: string
+                    description:
+                      type: string
+                    start_date:
+                      type: string
+                      format: date
+                    end_date:
+                      type: string
+                      format: date
+                    photo_url:
+                      type: string
+                    tags:
+                      type: string
+
+  /api/public/hackathons/{hackathon_id}/teams:
+    get:
+      tags:
+        - public
+      summary: Получить список команд хакатона (публичный)
+      description: Возвращает список команд хакатона для TG бота или публичной страницы
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+      responses:
+        '200':
+          description: Список команд успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TeamResponse'
+        '404':
+          description: Хакатон не найден
+
+  /api/public/hackathons/{hackathon_id}/participants:
+    get:
+      tags:
+        - public
+      summary: Получить список участников хакатона (публичный)
+      description: Возвращает список участников хакатона для TG бота или публичной страницы
+      parameters:
+        - name: hackathon_id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID хакатона
+        - name: team_status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [with_team, without_team]
+          description: Фильтр по наличию команды
+      responses:
+        '200':
+          description: Список участников успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ParticipantResponse'
+        '404':
+          description: Хакатон не найден
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Введите JWT токен полученный после входа.
+        Пример: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+    
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: access_token
+      description: |
+        Авторизация через куки. После входа куки устанавливаются автоматически.
+        Для ручного тестирования можно установить куку в браузере.
+
   schemas:
+    # === ОРГАНИЗАТОР ===
     OrganizerLogin:
       type: object
-      required: [email, password]
+      required:
+        - login
+        - password
       properties:
-        email:
+        login:
           type: string
-          format: email
+          minLength: 3
+          maxLength: 128
+          description: Логин организатора
+          example: "admin"
         password:
           type: string
-    
-    Organizer:
+          minLength: 6
+          description: Пароль организатора
+          example: "password123"
+
+    OrganizerResponse:
       type: object
       properties:
         id:
+          type: integer
+          description: ID организатора
+          example: 1
+        login:
           type: string
-          format: uuid
-        email:
+          description: Логин организатора
+          example: "admin"
+        created_at:
           type: string
-        name:
+          format: date-time
+          description: Дата создания аккаунта
+          example: "2024-01-15T10:30:00Z"
+
+    Token:
+      type: object
+      properties:
+        access_token:
           type: string
-    
+          description: JWT токен для аутентификации
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        token_type:
+          type: string
+          description: Тип токена
+          example: "bearer"
+        organizer:
+          $ref: '#/components/schemas/OrganizerResponse'
+
+    # === ХАКАТОН ===
     HackathonCreate:
       type: object
-      required: [title, registration_deadline, tasks_start, commission_work]
+      required:
+        - name
+        - description
+        - start_date
+        - end_date
       properties:
-        title:
+        name:
           type: string
+          maxLength: 255
+          description: Название хакатона
+          example: "ITAM Hackathon 2024"
         description:
           type: string
-        registration_deadline:
+          description: Описание хакатона
+          example: "Ежегодный хакатон для студентов ITAM"
+        start_date:
           type: string
-          format: date-time
-        tasks_start:
+          format: date
+          description: Дата начала хакатона
+          example: "2024-12-15"
+        end_date:
           type: string
-          format: date-time
-        expert_sessions:
-          type: array
-          items:
-            type: string
-            format: date-time
-        commission_work:
+          format: date
+          description: Дата окончания хакатона
+          example: "2024-12-17"
+        tags:
           type: string
-          format: date-time
-    
+          description: Теги через запятую
+          example: "ai,web,mobile"
+          default: ""
+        max_teams:
+          type: integer
+          minimum: 1
+          description: Максимальное количество команд
+          example: 20
+          default: 20
+        min_team_size:
+          type: integer
+          minimum: 1
+          description: Минимальный размер команды
+          example: 2
+          default: 2
+        max_team_size:
+          type: integer
+          minimum: 1
+          description: Максимальный размер команды
+          example: 5
+          default: 5
+
     HackathonUpdate:
       type: object
       properties:
-        title:
+        name:
           type: string
+          maxLength: 255
+          description: Название хакатона
+          example: "Обновленное название"
         description:
           type: string
-        registration_deadline:
+          description: Описание хакатона
+          example: "Обновленное описание"
+        start_date:
           type: string
-          format: date-time
-        tasks_start:
+          format: date
+          description: Дата начала хакатона
+          example: "2024-12-16"
+        end_date:
           type: string
-          format: date-time
-        expert_sessions:
-          type: array
-          items:
-            type: string
-            format: date-time
-        commission_work:
+          format: date
+          description: Дата окончания хакатона
+          example: "2024-12-18"
+        tags:
           type: string
-          format: date-time
-             
+          description: Теги через запятую
+          example: "ai,blockchain"
+        max_teams:
+          type: integer
+          minimum: 1
+          description: Максимальное количество команд
+          example: 25
+        min_team_size:
+          type: integer
+          minimum: 1
+          description: Минимальный размер команды
+          example: 3
+        max_team_size:
+          type: integer
+          minimum: 1
+          description: Максимальный размер команды
+          example: 6
+
     HackathonResponse:
       allOf:
         - $ref: '#/components/schemas/HackathonCreate'
         - type: object
           properties:
             id:
-              type: string
-              format: uuid
+              type: integer
+              description: ID хакатона
+              example: 1
             organizer_id:
+              type: integer
+              description: ID организатора
+              example: 1
+            photo_url:
               type: string
-              format: uuid
+              nullable: true
+              description: URL фото хакатона
+              example: "/uploads/hackathon_photos/1_abc123.jpg"
             created_at:
               type: string
               format: date-time
-            updated_at:
-              type: string
-              format: date-time
-            photo_url:
-              type: string
+              description: Дата создания хакатона
+              example: "2024-01-15T10:30:00Z"
+
+    PhotoUploadResponse:
+      type: object
+      properties:
+        photo_url:
+          type: string
+          description: URL загруженного фото
+          example: "/uploads/hackathon_photos/1_abc123.jpg"
+        message:
+          type: string
+          description: Сообщение об успешной загрузке
+          example: "Фото успешно загружено"
+
+    # === КОМАНДЫ И УЧАСТНИКИ ===
+    TeamMemberResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID участника команды
+          example: 1
+        user_id:
+          type: integer
+          nullable: true
+          description: ID пользователя
+          example: 123
+        role:
+          type: string
+          description: Роль участника
+          example: "backend"
+        approved:
+          type: boolean
+          description: Одобрен ли участник
+          example: true
+        user_name:
+          type: string
+          nullable: true
+          description: Имя пользователя
+          example: "Иван Иванов"
+        user_avatar:
+          type: string
+          nullable: true
+          description: URL аватара пользователя
+          example: "https://example.com/avatar.jpg"
+
+    TeamResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID команды
+          example: 1
+        name:
+          type: string
+          description: Название команды
+          example: "Dream Team"
+        is_completed:
+          type: boolean
+          description: Завершена ли комплектация команды
+          example: true
+        hackathon_id:
+          type: integer
+          description: ID хакатона
+          example: 1
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMemberResponse'
+          description: Список участников команды
+
+    ParticipantResponse:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID пользователя
+          example: 123
+        name:
+          type: string
+          description: Имя пользователя
+          example: "Иван Иванов"
+        avatar_url:
+          type: string
+          description: URL аватара пользователя
+          example: "https://example.com/avatar.jpg"
+        has_team:
+          type: boolean
+          description: Есть ли у пользователя команда
+          example: true
+        team_name:
+          type: string
+          nullable: true
+          description: Название команды пользователя
+          example: "Dream Team"
+        role:
+          type: string
+          nullable: true
+          description: Роль пользователя в команде
+          example: "backend"
+        skills:
+          type: array
+          items:
+            type: string
+          description: Список навыков пользователя
+          example: ["Python", "FastAPI", "PostgreSQL"]
+
+    # === АНАЛИТИКА И ОТВЕТЫ ===
+    AnalyticsResponse:
+      type: object
+      properties:
+        hackathon_id:
+          type: integer
+          description: ID хакатона
+          example: 1
+        hackathon_name:
+          type: string
+          description: Название хакатона
+          example: "ITAM Hackathon 2024"
+        total_teams:
+          type: integer
+          description: Общее количество команд
+          example: 15
+        total_participants:
+          type: integer
+          description: Общее количество участников
+          example: 45
+        incomplete_teams:
+          type: integer
+          description: Количество незавершенных команд
+          example: 3
+        team_completion_rate:
+          type: number
+          format: float
+          description: Процент завершенных команд
+          example: 80.0
+        max_teams:
+          type: integer
+          description: Максимальное количество команд
+          example: 20
+        team_size_range:
+          type: object
+          properties:
+            min:
+              type: integer
+              example: 2
+            max:
+              type: integer
+              example: 5
+          description: Диапазон размера команды
+        role_distribution:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Распределение участников по ролям
+          example:
+            backend: 15
+            frontend: 20
+            mobile: 10
+        remaining_slots:
+          type: integer
+          description: Оставшиеся слоты для команд
+          example: 5
+        registration_status:
+          type: string
+          description: Статус регистрации
+          example: "open"
+        days_until_start:
+          type: integer
+          description: Дней до начала хакатона
+          example: 10
+        average_team_size:
+          type: number
+          format: float
+          description: Средний размер команды
+          example: 3.0
+
+    TeamApproveResponse:
+      type: object
+      properties:
+        team_id:
+          type: integer
+          description: ID команды
+          example: 1
+        approved:
+          type: boolean
+          description: Статус одобрения
+          example: true
+        message:
+          type: string
+          description: Сообщение
+          example: "Team Dream Team has been approved successfully"
+        team_name:
+          type: string
+          description: Название команды
+          example: "Dream Team"
+        total_members:
+          type: integer
+          description: Общее количество участников
+          example: 4
+        approved_members:
+          type: integer
+          description: Количество одобренных участников
+          example: 4
+
+    AssignParticipantResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Успешно ли выполнено распределение
+          example: true
+        message:
+          type: string
+          description: Сообщение
+          example: "User 'Иван Иванов' has been assigned to team 'Dream Team' as backend"
+        team_id:
+          type: integer
+          description: ID команды
+          example: 1
+        team_name:
+          type: string
+          description: Название команды
+          example: "Dream Team"
+        user_id:
+          type: integer
+          description: ID пользователя
+          example: 123
+        user_name:
+          type: string
+          description: Имя пользователя
+          example: "Иван Иванов"
+        role:
+          type: string
+          description: Роль пользователя
+          example: "backend"
+        team_completed:
+          type: boolean
+          description: Завершена ли комплектация команды
+          example: true
+        team_size_before:
+          type: integer
+          description: Размер команды до распределения
+          example: 3
+        team_size_after:
+          type: integer
+          description: Размер команды после распределения
+          example: 4
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Описание ошибки
+          example: "Хакатон не найден"
+        status_code:
+          type: integer
+          description: HTTP статус код
+          example: 404
+
+tags:
+  - name: organizer_auth
+    description: Аутентификация и управление аккаунтом организатора
+  - name: organizer_hackathons
+    description: Управление хакатонами (создание, редактирование, удаление)
+  - name: organizer_teams
+    description: Управление командами и участниками хакатона
+  - name: public
+    description: Публичные эндпоинты, не требующие авторизации
+
+externalDocs:
+  description: "GitHub репозиторий проекта"
+  url: "https://github.com/Chudinow/Hack.ITAM.Misis"

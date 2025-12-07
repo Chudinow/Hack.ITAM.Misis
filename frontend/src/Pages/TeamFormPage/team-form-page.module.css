@@ -123,4 +123,45 @@
   padding: 2rem;
 }
 
+/* Сетка чипов */
+.skillsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+/* Обычный чип */
+.skillChip {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #d18bff;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  user-select: none;
+}
+
+.skillChip:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* Активный чип (выбран) */
+.skillChipActive {
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid #f0b4ff;
+  background: #d18bff;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  user-select: none;
+}
+
+.skillChipActive:hover {
+  background: #e0bfff;
+}
 

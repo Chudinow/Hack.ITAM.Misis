@@ -1,135 +1,71 @@
 import { apiInstance } from "./apiInstance";
+import type { RoleType } from "./TeamApi";
 
-/* ===============================
-      TYPES (из Swagger)
-================================= */
-
-/* --- Telegram Auth Payload --- */
-export interface TelegramAuthPayload {
-  id: number;
-  first_name: string;
-  last_name: string;
-  username: string;
-  photo_url: string;
-  auth_date: number;
-  hash: string;
-}
-
-/* --- User (basic info) --- */
-export interface User {
-  id: number;
-  name: string;
-  photo_url: string;
-}
-
-/* --- Profile Edit Payload --- */
-export interface UserProfileEditPayload {
-  user_id: number;
-  about: string;
-  skills_id: number[];
-  role: string; // новое поле
-}
-
-/* --- Skill --- */
 export interface Skill {
   id: number;
   name: string;
   type: "hard" | "soft";
 }
 
-/* --- User Profile (GET user/{id}/profile) --- */
-export interface UserProfile {
+export interface User {
+  id: number;
+  name: string;
+  photo_url: string;
+}
+
+export interface Profile {
   id: number;
   user_id: number;
   about: string;
-  skills: Skill[];
-  role: string; // новое поле
-}
-
-/* --- Skills List --- */
-export interface SkillsListResponse {
+  role: RoleType;
   skills: Skill[];
 }
 
-/* ====================================
-          USER API METHODS
-===================================== */
+export interface EditProfilePayload {
+  user_id: number;
+  about?: string | null;
+  role: RoleType;
+  skills_id: number[];
+}
 
 export const UserAPI = {
-  /**
-   * Telegram авторизация
-   * POST /api/user/auth
-   */
-  authTelegram: async (payload: TelegramAuthPayload): Promise<User> => {
-    const { data } = await apiInstance.post<User>("/api/user/auth", payload);
-    return data;
-  },
-
-  /**
-   * Получить пользователя по ID
-   * GET /api/user/{user_id}
-   */
-  getUser: async (userId: number | string): Promise<User> => {
-    const { data } = await apiInstance.get<User>(`/api/user/${userId}`);
-    return data;
-  },
-
-  /**
-   * Получить профиль пользователя
-   * GET /api/user/{user_id}/profile
-   */
-  getProfile: async (userId: number | string): Promise<UserProfile> => {
-    const { data } = await apiInstance.get<UserProfile>(
-      `/api/user/${userId}/profile`
-    );
-    return data;
-  },
-
-  /**
-   * Изменить профиль пользователя
-   * PUT /api/user/{user_id}/profile
-   */
-  updateProfile: async (
-    userId: number | string,
-    payload: UserProfileEditPayload
-  ): Promise<UserProfile> => {
-    const { data } = await apiInstance.put<UserProfile>(
-      `/api/user/${userId}/profile`,
-      payload
-    );
-    return data;
-  },
-    /**
-   * Проверка авторизации
-   * GET /api/user/auth
-   * Возвращает User или 401
-   */
   checkAuth: async (): Promise<User> => {
-    const { data } = await apiInstance.get<User>("/api/user/auth", {
+    const { data } = await apiInstance.get("/api/user/auth", {
       withCredentials: true,
     });
     return data;
   },
 
-  /**
-   * Список всех навыков
-   * GET /api/user/profile/skills
-   */
-  getSkills: async (): Promise<SkillsListResponse> => {
-    const { data } = await apiInstance.get<SkillsListResponse>(
-      "/api/user/profile/skills"
+  authTelegram: async (payload: any): Promise<User> => {
+    const { data } = await apiInstance.post("/api/user/auth", payload);
+    return data;
+  },
+
+  getUser: async (id: number): Promise<User> => {
+    const { data } = await apiInstance.get(`/api/user/${id}`);
+    return data;
+  },
+
+  getProfile: async (id: number): Promise<Profile> => {
+    const { data } = await apiInstance.get(`/api/user/${id}/profile`);
+    return data;
+  },
+
+  updateProfile: async (profileId: number, userId: number, payload: EditProfilePayload) => {
+    const { data } = await apiInstance.put(
+      `/api/user/${profileId}/profile?user_id=${userId}`,
+      payload
     );
     return data;
   },
 
-  /**
-   * Получить навык по ID
-   * GET /api/user/profile/skills/{skill_id}
-   */
-  getSkillById: async (skillId: number | string): Promise<Skill> => {
-    const { data } = await apiInstance.get<Skill>(
-      `/api/user/profile/skills/${skillId}`
-    );
+  getSkills: async (): Promise<Skill[]> => {
+    const { data } = await apiInstance.get("/api/skills");
+    return data.skills;
+  },
+
+  getSkillById: async (skillId: number): Promise<Skill> => {
+    const { data } = await apiInstance.get(`/api/skill/${skillId}`);
     return data;
   },
 };

@@ -3,6 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from db.models import (
     HackathonModel,
+    InviteModel,
+    InviteStatusEnum,
+    InviteTypeEnum,
     ParticipantsModel,
     ProfileModel,
     ProfileSkillModel,
@@ -12,6 +15,70 @@ from db.models import (
     TeamModel,
     UserModel,
 )
+
+
+async def create_invite(
+    session: AsyncSession, team_id: int, participant_id: int, invite_type: InviteTypeEnum
+) -> InviteModel:
+    invite = InviteModel(
+        team_id=team_id,
+        participant_id=participant_id,
+        type=invite_type,
+        status=InviteStatusEnum.PENDING,
+    )
+    session.add(invite)
+    await session.flush()
+    await session.commit()
+    return invite
+
+
+async def get_invite_by_id(session: AsyncSession, invite_id: int) -> InviteModel | None:
+    result = await session.execute(select(InviteModel).where(InviteModel.id == invite_id))
+    return result.scalars().first()
+
+
+async def get_invite(
+    session: AsyncSession, team_id: int, participant_id: int, invite_type: InviteTypeEnum
+) -> InviteModel | None:
+    result = await session.execute(
+        select(InviteModel).where(
+            InviteModel.team_id == team_id,
+            InviteModel.participant_id == participant_id,
+            InviteModel.type == invite_type,
+        )
+    )
+    return result.scalars().first()
+
+
+async def get_invites_for_team(session: AsyncSession, team_id: int) -> list[InviteModel]:
+    result = await session.execute(select(InviteModel).where(InviteModel.team_id == team_id))
+    return result.scalars().all()
+
+
+async def get_invites_for_participant(
+    session: AsyncSession, participant_id: int
+) -> list[InviteModel]:
+    result = await session.execute(
+        select(InviteModel).where(InviteModel.participant_id == participant_id)
+    )
+    return result.scalars().all()
+
+
+async def update_invite_status(
+    session: AsyncSession, invite_id: int, status: InviteStatusEnum
+) -> InviteModel | None:
+    invite = await get_invite_by_id(session, invite_id)
+    if not invite:
+        return None
+    invite.status = status
+    session.add(invite)
+    await session.commit()
+    return invite
+
+
+async def delete_invite(session: AsyncSession, invite_id: int) -> None:
+    await session.execute(delete(InviteModel).where(InviteModel.id == invite_id))
+    await session.commit()
 
 
 async def get_hacks(session: AsyncSession, offset: int = 0, limit: int | None = None):
@@ -112,11 +179,40 @@ async def get_team_by_id(session: AsyncSession, team_id: int):
     return result.scalars().first()
 
 
+async def get_participant_by_id(session: AsyncSession, participant_id: int) -> ParticipantsModel:
+    result = await session.execute(
+        select(ParticipantsModel).where(ParticipantsModel.id == participant_id)
+    )
+    return result.scalars().first()
+
+
 async def update_team_members(session: AsyncSession, team_id: int, member_ids: list[int]):
     await session.execute(delete(TeamMemberModel).where(TeamMemberModel.team_id == team_id))
     for uid in member_ids:
         session.add(TeamMemberModel(team_id=team_id, user_id=uid))
     await session.commit()
+
+
+async def add_participant_to_team(session: AsyncSession, team_id: int, participant_id: int) -> None:
+    participant = await get_participant_by_id(session, participant_id)
+    if not participant:
+        return
+
+    result = await session.execute(
+        select(TeamMemberModel).where(
+            TeamMemberModel.team_id == team_id,
+            TeamMemberModel.user_id == 0,
+            TeamMemberModel.role == participant.profile.role,
+        )
+    )
+
+    team_member = result.scalars().first()
+    if team_member:
+        team_member.user_id = participant.profile.user.id
+        session.add(team_member)
+        await session.commit()
+    else:
+        raise Exception("something went wrong")
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> UserModel:

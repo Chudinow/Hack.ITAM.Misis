@@ -145,6 +145,9 @@ class TeamModel(Base):
     team_members: Mapped[list["TeamMemberModel"]] = relationship(
         "TeamMemberModel", back_populates="team", lazy="selectin"
     )
+    invites: Mapped[list["InviteModel"]] = relationship(
+        "InviteModel", back_populates="team", lazy="selectin"
+    )
 
 
 class TeamMemberModel(Base):
@@ -178,4 +181,38 @@ class ParticipantsModel(Base):
     )
     profile: Mapped["ProfileModel"] = relationship(
         "ProfileModel", back_populates="participants", lazy="joined"
+    )
+    invites: Mapped[list["InviteModel"]] = relationship(
+        "InviteModel", back_populates="participant", lazy="selectin"
+    )
+
+
+class InviteStatusEnum(PyEnum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    REJECTED = "rejected"
+
+
+class InviteTypeEnum(PyEnum):
+    INVITE = "invite"
+    REQUEST = "request"
+
+
+class InviteModel(Base):
+    __tablename__ = "invites"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"), index=True)
+    participant_id: Mapped[int] = mapped_column(ForeignKey("participants.id"), index=True)
+    type: Mapped[InviteTypeEnum] = mapped_column(
+        PQEnum(InviteTypeEnum, create_type=True), nullable=False
+    )
+    status: Mapped[InviteStatusEnum] = mapped_column(
+        PQEnum(InviteStatusEnum, create_type=True),
+        nullable=False,
+    )
+
+    team: Mapped["TeamModel"] = relationship("TeamModel", back_populates="invites", lazy="joined")
+    participant: Mapped["ParticipantsModel"] = relationship(
+        "ParticipantsModel", back_populates="invites", lazy="joined"
     )

@@ -1,10 +1,6 @@
+import os
 
 from decouple import config
-from dotenv import load_dotenv
-
-
-
-import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -21,3 +17,4 @@ API_PREFIX = os.getenv("API_PREFIX", "/api/v1")
 SECRET_KEY = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")

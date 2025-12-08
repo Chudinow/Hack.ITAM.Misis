@@ -7,6 +7,7 @@ from bot.routes.invites import send_join_request, send_team_invite
 from db import crud, get_session
 from utils import get_current_user_id
 
+from ...user.schema import SkillSchema
 from .schema import (
     EmptyRoleSchema,
     ParticipantSchema,
@@ -95,6 +96,23 @@ async def search_teams_with_empty_members(hack_id: int, db: AsyncSession = Depen
     return result
 
 
+@router.post("/participant")
+async def create_participant(
+    hack_id: int,
+    db: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
+):
+    profile = await crud.get_profile_by_user_id(db, user_id)
+    if profile is None:
+        raise HTTPException(HTTP_404_NOT_FOUND, detail="профиль не найден")
+
+    existing_participant = await crud.get_participant_by_hack_profile(db, hack_id, profile.id)
+    if existing_participant is not None:
+        return
+
+    await crud.create_participant(db, hack_id, profile.id)
+
+
 @router.get("/participants/search", response_model=ParticipantsListSchema)
 async def search_ParticipantsListSchema(hack_id: int, db: AsyncSession = Depends(get_session)):
     participants = await crud.get_participants_by_hack_id(db, hack_id)
@@ -108,7 +126,14 @@ async def search_ParticipantsListSchema(hack_id: int, db: AsyncSession = Depends
                     user_id=par.profile.user_id,
                     about=par.profile.about,
                     role=par.profile.role,
-                    skills=par.profile.profile_skills,
+                    skills=[
+                        SkillSchema(
+                            id=skill.skill.id,
+                            name=skill.skill.name,
+                            type=skill.skill.type,
+                        )
+                        for skill in par.profile.profile_skills
+                    ],
                 ),
             )
             for par in participants

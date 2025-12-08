@@ -2,7 +2,7 @@ import time
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import JWT_EXPIRE_MINUTES, SECRET_KEY, TG_BOT_TOKEN
@@ -38,12 +38,12 @@ def create_jwt(user_id: int) -> str:
 @router.post("/user/auth")
 async def telegram_auth(
     payload: TelegramAuthPayload, session: AsyncSession = Depends(get_session)
-) -> JSONResponse:
+) -> Response:
     data = payload.model_dump()
     if not verify_telegram_auth(data, TG_BOT_TOKEN):
         raise HTTPException(status_code=400, detail="Неккоректные данные токена телеграм")
 
-    user = crud.get_or_create_user_by_telegram(
+    user = await crud.get_or_create_user_by_telegram(
         session=session,
         tg_id=data["id"],
         first_name=data.get("first_name"),
@@ -52,14 +52,12 @@ async def telegram_auth(
         photo_url=data.get("photo_url"),
     )
 
-    token = create_jwt(user_id=user["id"])
-    response = JSONResponse(
-        UserAuthResponse(access_token=token, token_type="bearer", user=user).model_dump()
-    )
+    token = create_jwt(user_id=user.id)
+    response = Response(status_code=200)
     response.set_cookie(
         key="access_token",
         value=token,
-        httponly=True,
+        httponly=False,
         max_age=JWT_EXPIRE_MINUTES * 60,
         samesite="lax",
         secure=False,  # временно
@@ -94,6 +92,8 @@ async def get_profile(user_id: int, session: AsyncSession = Depends(get_session)
         raise HTTPException(status_code=404, detail="Профиль пользователя с таким id не найден.")
 
     profile = await crud.get_profile_by_user_id(session, user_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="У пользователя нет профиля.")
 
     skill_ids = await crud.get_profile_skill_ids(session, profile.id)
     skill_objs = await crud.get_skills_by_ids(session, skill_ids)
@@ -101,6 +101,7 @@ async def get_profile(user_id: int, session: AsyncSession = Depends(get_session)
     return ProfileSchema(
         id=profile.id,
         user_id=profile.user_id,
+        role=profile.role,
         about=profile.about,
         skills=[SkillSchema(id=s.id, name=s.name, type=s.type) for s in skill_objs],
     )
@@ -113,16 +114,19 @@ async def edit_user_profile(
     session: AsyncSession = Depends(get_session),
     user_id: int = Depends(get_current_user_id),
 ) -> ProfileSchema:
-    if user_id != user_profile_id:
+    profile = await crud.get_profile_by_user_id(session, user_id)
+    if profile.id != user_profile_id:
         raise HTTPException(403, detail="bla bla bla bla idi naxui")
+    if profile is None:
+        profile = await crud.create_profile(session, user_id, edit_profile.role, edit_profile.about)
+    else:
+        if profile.about != edit_profile.about:
+            profile = await crud.update_profile_about(session, profile, edit_profile.about)
 
-    profile = await crud.get_profile_by_user_id(session, user_profile_id)
+        if profile.role != edit_profile.role:
+            profile = await crud.update_profile_role(session, profile, edit_profile.role)
 
-    if profile.about != edit_profile.about:
-        profile = await crud.update_profile_about(session, profile, edit_profile.about)
-
-    if profile.role != edit_profile.role:
-        profile = await crud.update_profile_role(session, profile, edit_profile.role)
+    await crud.init_default_skills(session)
 
     await crud.set_profile_skills(session, profile.id, edit_profile.skills_id)
 
@@ -130,6 +134,7 @@ async def edit_user_profile(
     skill_objs = await crud.get_skills_by_ids(session, skill_ids)
 
     return ProfileSchema(
+        id=profile.id,
         user_id=user_id,
         role=profile.role,
         about=profile.about,

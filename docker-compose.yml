@@ -22,5 +22,18 @@
       - ./backend:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
+  frontend:
+    build: ./frontend
+    container_name: hackathon_frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+    # Ensure dependencies (including devDependencies like vite) are installed
+    # before starting the dev server. Run Vite exposed on 0.0.0.0 so host can reach it.
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
+
 volumes:
   postgres_data:

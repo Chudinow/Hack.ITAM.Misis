@@ -3,11 +3,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import styles from "./participant-form-page.module.css";
 
 import { HackAPI } from "../../Shared/api/HackApi";
-import { UserAPI } from "../../Shared/api/UserApi";
 import { ProfileAPI } from "../../Shared/api/ProfileApi";
+import { UserAPI } from "../../Shared/api/UserApi";
 
-import type { Skill } from "../../Shared/api/UserApi";
 import type { RoleType } from "../../Shared/api/ProfileApi";
+import type { Skill } from "../../Shared/api/UserApi";
 
 const ROLE_OPTIONS: RoleType[] = [
   "backend",
@@ -127,6 +127,8 @@ const ParticipantFormPage: React.FC = () => {
         role: role as RoleType,
         skills_id: skills,
       });
+
+      await ProfileAPI.createParticipant(Number(hackId));
 
       navigate(`/hackdetails/${hackId}`);
     } catch (e) {

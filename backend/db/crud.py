@@ -16,6 +16,29 @@ from db.models import (
     UserModel,
 )
 
+FALLBACK_SKILLS = [
+    {"id": 1, "name": "JS", "type": "hard"},
+    {"id": 2, "name": "TS", "type": "hard"},
+    {"id": 3, "name": "React", "type": "hard"},
+    {"id": 4, "name": "Vite", "type": "hard"},
+    {"id": 5, "name": "Python", "type": "hard"},
+    {"id": 6, "name": "C#", "type": "hard"},
+    {"id": 7, "name": "C++", "type": "hard"},
+    {"id": 8, "name": "GO", "type": "hard"},
+    {"id": 9, "name": "Docker", "type": "hard"},
+    {"id": 10, "name": "AI", "type": "soft"},
+]
+
+
+async def init_default_skills(session: AsyncSession):
+    for skill in FALLBACK_SKILLS:
+        exists = await session.execute(
+            SkillModel.__table__.select().where(SkillModel.id == skill["id"])
+        )
+        if not exists.scalar():
+            session.add(SkillModel(**skill))
+    await session.commit()
+
 
 async def create_invite(
     session: AsyncSession, team_id: int, participant_id: int, invite_type: InviteTypeEnum
@@ -44,7 +67,7 @@ async def get_invite(
         select(InviteModel).where(
             InviteModel.team_id == team_id,
             InviteModel.participant_id == participant_id,
-            InviteModel.type == invite_type,
+            InviteModel.type == invite_type.value,
         )
     )
     return result.scalars().first()
@@ -137,7 +160,7 @@ async def create_team(
     session.add(team_member)
 
     for find_role in find_roles:
-        team_member = TeamMemberModel(team_id=team.id, user_id=0, role=find_role)
+        team_member = TeamMemberModel(team_id=team.id, user_id=None, role=find_role.value)
         session.add(team_member)
 
     await session.commit()
@@ -179,6 +202,28 @@ async def get_team_by_id(session: AsyncSession, team_id: int):
     return result.scalars().first()
 
 
+async def create_participant(
+    session: AsyncSession, hack_id: int, profile_id: int
+) -> ParticipantsModel:
+    participant = ParticipantsModel(hackathon_id=hack_id, profile_id=profile_id)
+    session.add(participant)
+    await session.flush()
+    await session.commit()
+    return participant
+
+
+async def get_participant_by_hack_profile(
+    session: AsyncSession, hack_id: int, profile_id: int
+) -> ParticipantsModel:
+    result = await session.execute(
+        select(ParticipantsModel).where(
+            ParticipantsModel.hackathon_id == hack_id,
+            ParticipantsModel.profile_id == profile_id,
+        )
+    )
+    return result.scalars().first()
+
+
 async def get_participant_by_id(session: AsyncSession, participant_id: int) -> ParticipantsModel:
     result = await session.execute(
         select(ParticipantsModel).where(ParticipantsModel.id == participant_id)
@@ -201,7 +246,7 @@ async def add_participant_to_team(session: AsyncSession, team_id: int, participa
     result = await session.execute(
         select(TeamMemberModel).where(
             TeamMemberModel.team_id == team_id,
-            TeamMemberModel.user_id == 0,
+            TeamMemberModel.user_id == None,
             TeamMemberModel.role == participant.profile.role,
         )
     )
@@ -213,6 +258,12 @@ async def add_participant_to_team(session: AsyncSession, team_id: int, participa
         await session.commit()
     else:
         raise Exception("something went wrong")
+
+
+async def delete_participant_by_id(session: AsyncSession, participant_id: int):
+    await session.execute(delete(InviteModel).where(InviteModel.participant_id == participant_id))
+    await session.execute(delete(ParticipantsModel).where(ParticipantsModel.id == participant_id))
+    await session.commit()
 
 
 async def get_user_by_id(session: AsyncSession, user_id: int) -> UserModel:
@@ -233,8 +284,10 @@ async def create_user_by_telegram(
     username: str | None,
     photo_url: str | None,
 ) -> UserModel:
-    name = username or " ".join(filter(None, (first_name, last_name))) or ""
-    user = UserModel(telegram_id=tg_id, name=name, avatar_url=photo_url or "")
+    name = " ".join(filter(None, (first_name, last_name))) or ""
+    user = UserModel(
+        telegram_id=tg_id, name=name, telegram_username=username, avatar_url=photo_url or ""
+    )
     session.add(user)
     await session.flush()
     await session.refresh(user)
@@ -261,6 +314,10 @@ async def update_user_by_telegram(
         user.avatar_url = new_avatar
         changed = True
 
+    if user.telegram_username != username:
+        user.telegram_username = username
+        changed = True
+
     if changed:
         session.add(user)
         await session.flush()
@@ -283,7 +340,6 @@ async def get_or_create_user_by_telegram(
         user = await create_user_by_telegram(
             session, tg_id, first_name, last_name, username, photo_url
         )
-        await create_profile(session, user.id)
         return user
 
     return await update_user_by_telegram(session, user, first_name, last_name, username, photo_url)
@@ -295,9 +351,9 @@ async def get_profile_by_user_id(session: AsyncSession, user_id: int) -> Profile
 
 
 async def create_profile(
-    session: AsyncSession, user_id: int, about: str | None = ""
+    session: AsyncSession, user_id: int, role: RoleType, about: str | None = ""
 ) -> ProfileModel:
-    profile = ProfileModel(user_id=user_id, about=about or "")
+    profile = ProfileModel(user_id=user_id, role=role.value, about=about or "")
     session.add(profile)
     await session.flush()
     await session.refresh(profile)
@@ -379,7 +435,7 @@ async def get_teams_with_empty_members(session: AsyncSession, hackathon_id: int 
         select(TeamModel, TeamMemberModel)
         .join(TeamMemberModel, TeamModel.id == TeamMemberModel.team_id)
         .where(
-            (TeamMemberModel.user_id is None) | (TeamMemberModel.user_id == 0)
+            (TeamMemberModel.user_id == None) | (TeamMemberModel.user_id == 0)  # noqa: E711
         )  # не уверен там нан или 0
     )
     q = q.where(TeamModel.hackathon_id == hackathon_id)

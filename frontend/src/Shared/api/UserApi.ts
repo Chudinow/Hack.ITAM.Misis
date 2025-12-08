@@ -1,6 +1,5 @@
 import { apiInstance } from "./apiInstance";
-import type { RoleType } from "./ProfileApi";
-import type { Profile } from "./ProfileApi";
+import type { Profile, RoleType } from "./ProfileApi";
 
 export interface Skill {
   id: number;
@@ -34,7 +33,7 @@ export interface EditProfilePayload {
 export const UserAPI = {
   // Проверка авторизации (используется в RequireAuth)
   checkAuth: async (): Promise<User> => {
-    const { data } = await apiInstance.get<User>("/api/user/auth", {
+    const { data } = await apiInstance.get<User>("/api/user/me", {
       withCredentials: true,
     });
     return data;

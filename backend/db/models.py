@@ -26,12 +26,12 @@ class UserModel(Base):
 
 
 class RoleType(PyEnum):
-    BACKEND = "backend"
-    FRONTEND = "frontend"
-    MOBILE = "mobile"
-    ML = "ml"
-    PRODUCT = "product"
-    DESIGNER = "designer"
+    backend = "backend"
+    frontend = "frontend"
+    mobile = "mobile"
+    ml = "ml"
+    product = "product"
+    designer = "designer"
 
 
 class ProfileModel(Base):
@@ -69,8 +69,8 @@ class ProfileSkillModel(Base):
 
 
 class SkillType(PyEnum):
-    HARD = "hard"
-    SOFT = "soft"
+    hard = "hard"
+    soft = "soft"
 
 
 class SkillModel(Base):
@@ -189,14 +189,14 @@ class ParticipantsModel(Base):
 
 
 class InviteStatusEnum(PyEnum):
-    PENDING = "pending"
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
 
 
 class InviteTypeEnum(PyEnum):
-    INVITE = "invite"
-    REQUEST = "request"
+    INVITE = "INVITE"
+    REQUEST = "REQUEST"
 
 
 class InviteModel(Base):

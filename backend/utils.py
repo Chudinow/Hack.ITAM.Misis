@@ -46,8 +46,8 @@ def get_current_user_id(request: Request) -> int:
     except jwt.PyJWTError as exc:
         raise HTTPException(status_code=401, detail="Invalid token") from exc
 
-    user_id = payload.get("user_id")
+    user_id = payload.get("sub")
     if user_id is None:
         raise HTTPException(status_code=401, detail="user_id not found")
 
-    return user_id
+    return int(user_id)

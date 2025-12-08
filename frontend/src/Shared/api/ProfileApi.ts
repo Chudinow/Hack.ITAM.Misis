@@ -44,4 +44,9 @@ export const ProfileAPI = {
     );
     return data;
   },
+
+    // Добавление участника в хакатон
+    createParticipant: async (hackId: number): Promise<void> => {
+      await apiInstance.post(`/api/hack/${hackId}/participant`, null, { withCredentials: true });
+    },
 };

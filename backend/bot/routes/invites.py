@@ -27,8 +27,7 @@ async def send_team_invite(
     if existing and existing.status == InviteStatusEnum.PENDING:
         return False, "Участнику уже отправлено приглашение."
 
-    await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.INVITE)
-    await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.INVITE)
+    invite = await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.INVITE)
 
     team = await crud.get_team_by_id(db_session, team_id)
     participant = await crud.get_participant_by_id(db_session, participant_id)
@@ -38,7 +37,7 @@ async def send_team_invite(
     await bot.send_message(
         participant.profile.user.telegram_id,
         f"Вы приглащшены в команду {team.name}",
-        reply_markup=invite_keyboard,
+        reply_markup=invite_keyboard(invite.id),
     )
     return True, "Приглашение отправлено."
 
@@ -51,7 +50,7 @@ async def send_join_request(
     if existing and existing.status == InviteStatusEnum.PENDING:
         return False, "Вы уже отправили заявку в эту команду."
 
-    await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.REQUEST)
+    invite = await crud.create_invite(db_session, team_id, participant_id, InviteTypeEnum.REQUEST)
 
     creator = await crud.get_team_creator(db_session, team_id)
     team = await crud.get_team_by_id(db_session, team_id)
@@ -61,7 +60,7 @@ async def send_join_request(
     await bot.send_message(
         creator.telegram_id,
         f"К вам в {team.name} хочет {participant.profile.user.name}",
-        reply_markup=invite_keyboard,
+        reply_markup=invite_keyboard(invite.id),
     )
     return True, "Заявка отправлена."
 
@@ -80,6 +79,7 @@ async def accept_invite_callback(callback: CallbackQuery, db_session: AsyncSessi
     await callback.message.edit_reply_markup(reply_markup=None)
 
     await crud.add_participant_to_team(db_session, invite.team_id, invite.participant_id)
+    await crud.delete_participant_by_id(db_session, invite.participant_id)
 
 
 # отклонить приглашение или заявку

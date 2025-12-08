@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from bot import start_bot
 from db import db
 from server.mw import ErrorHandlerMiddleware
 from server.routes import (
@@ -18,6 +19,9 @@ from server.routes import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    import asyncio
+
+    asyncio.create_task(start_bot())
     await db.connect()
     yield
     await db.disconnect()
@@ -31,7 +35,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "https://test.xn--80aaaaga5bxbek0bk.xn--p1ai"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

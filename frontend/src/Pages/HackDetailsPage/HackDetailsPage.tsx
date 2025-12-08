@@ -1,9 +1,9 @@
-import styles from "./hack-details-page.module.css";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { HackAPI, Hack } from "../../Shared/api/HackApi";
+import { Hack, HackAPI } from "../../Shared/api/HackApi";
 import { TeamAPI } from "../../Shared/api/TeamApi";
 import { UserAPI } from "../../Shared/api/UserApi";
-import { useEffect, useState } from "react";
+import styles from "./hack-details-page.module.css";
 
 const HackDetailsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -61,12 +61,12 @@ const HackDetailsPage: React.FC = () => {
 
     try {
       const res = await TeamAPI.searchParticipants(Number(id));
-
-      const normalized = res.map((p: any) => ({
-        id: p.participant_id,
-        name: p.name,
-        role: p.role,
-        skills: p.skills ?? [],
+      
+      const normalized = (res.participants ?? []).map((p: any) => ({
+        id: p.id,
+        name: p.profile?.user_id ?? "",
+        role: p.profile?.role ?? "",
+        skills: p.profile?.skills ?? [],
       }));
 
       setParticipants(normalized);

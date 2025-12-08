@@ -5,7 +5,7 @@ from starlette.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from bot.routes.invites import send_join_request, send_team_invite
 from db import crud, get_session
-from utils import jwt_required
+from utils import get_current_user_id
 
 from .schema import (
     EmptyRoleSchema,
@@ -21,9 +21,11 @@ router = APIRouter(prefix="/api/hack/{hack_id}", tags=["team"])
 
 
 @router.post("/team/", status_code=status.HTTP_201_CREATED)
-@jwt_required
 async def create_team(
-    hack_id: int, user_id: int, payload: TeamCreateSchema, db: AsyncSession = Depends(get_session)
+    hack_id: int,
+    payload: TeamCreateSchema,
+    db: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ) -> TeamResponseSchema:
     if await crud.get_team_by_hack_user(db, hack_id, user_id) is not None:
         raise HTTPException(HTTP_409_CONFLICT, detail="уже в команде/создал команду")
@@ -41,9 +43,10 @@ async def create_team(
 
 
 @router.get("/team/")
-@jwt_required
 async def get_user_team(
-    hack_id: int, user_id: int, db: AsyncSession = Depends(get_session)
+    hack_id: int,
+    db: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ) -> TeamResponseSchema:
     team = await crud.get_team_by_hack_user(db, hack_id, user_id)
     if team is None:
@@ -115,12 +118,12 @@ async def search_ParticipantsListSchema(hack_id: int, db: AsyncSession = Depends
 
 # приглашение участника в команду
 @router.post("/team/{team_id}/invite", status_code=status.HTTP_200_OK)
-@jwt_required
 async def invite_participant_to_team(
     hack_id: int,
     team_id: int,
     participant_id: int,
     db: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ) -> dict:
     success, message = await send_team_invite(team_id, participant_id, db)
     if not success:
@@ -130,9 +133,12 @@ async def invite_participant_to_team(
 
 # подача заявки на вступление в команду
 @router.post("/team/{team_id}/apply", status_code=status.HTTP_200_OK)
-@jwt_required
 async def apply_participant_to_team(
-    hack_id: int, team_id: int, participant_id: int, db: AsyncSession = Depends(get_session)
+    hack_id: int,
+    team_id: int,
+    participant_id: int,
+    db: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ) -> dict:
     success, message = await send_join_request(team_id, participant_id, db)
     if not success:

@@ -65,9 +65,7 @@ async def organizer_login(
         key="user_id", value=str(organizer.id), max_age=1800, samesite="lax", secure=False
     )
 
-    organizer_response = OrganizerResponse(
-        id=organizer.id, login=organizer.login, created_at=organizer.created_at
-    )
+    organizer_response = OrganizerResponse(id=organizer.id, login=organizer.login)
 
     return Token(access_token=access_token, token_type="bearer", organizer=organizer_response)
 
@@ -117,9 +115,7 @@ async def organizer_register(
         secure=False,
     )
 
-    organizer_response = OrganizerResponse(
-        id=organizer.id, login=organizer.login, created_at=organizer.created_at
-    )
+    organizer_response = OrganizerResponse(id=organizer.id, login=organizer.login)
 
     return Token(access_token=access_token, token_type="bearer", organizer=organizer_response)
 
@@ -140,7 +136,6 @@ async def get_current_user(
     return OrganizerResponse(
         id=current_organizer.id,
         login=current_organizer.login,
-        created_at=current_organizer.created_at,
     )
 
 

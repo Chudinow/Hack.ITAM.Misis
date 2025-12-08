@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import JWT_EXPIRE_MINUTES, SECRET_KEY, TG_BOT_TOKEN
 from db import crud, get_session
-from utils import jwt_required, verify_telegram_auth
+from utils import get_current_user_id, verify_telegram_auth
 
 from .schema import (
     EditProfileSchema,
@@ -19,7 +19,7 @@ from .schema import (
     UserSchema,
 )
 
-router = APIRouter(prefix="/api", tags=["user", "profile"])
+router = APIRouter(prefix="/api", tags=["user"])
 
 
 def create_jwt(user_id: int) -> str:
@@ -67,6 +67,17 @@ async def telegram_auth(
     return response
 
 
+@router.get("/user/me")
+async def get_me(
+    session: AsyncSession = Depends(get_session), user_id: int = Depends(get_current_user_id)
+) -> UserSchema:
+    user = await crud.get_user_by_id(session, user_id)
+    if user is None:
+        raise HTTPException(401)
+
+    return UserSchema(id=user.id, name=user.name, photo_url=user.avatar_url)
+
+
 @router.get("/user/{user_id}")
 async def get_user(user_id: int, session: AsyncSession = Depends(get_session)) -> UserSchema:
     user = await crud.get_user_by_id(session, user_id)
@@ -96,12 +107,11 @@ async def get_profile(user_id: int, session: AsyncSession = Depends(get_session)
 
 
 @router.put("/user/{user_profile_id}/profile")
-@jwt_required
 async def edit_user_profile(
-    user_id: int,
     user_profile_id: int,
     edit_profile: EditProfileSchema,
     session: AsyncSession = Depends(get_session),
+    user_id: int = Depends(get_current_user_id),
 ) -> ProfileSchema:
     if user_id != user_profile_id:
         raise HTTPException(403, detail="bla bla bla bla idi naxui")

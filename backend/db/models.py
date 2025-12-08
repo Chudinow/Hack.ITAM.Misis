@@ -13,6 +13,7 @@ class UserModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     telegram_id: Mapped[int] = mapped_column(BigInteger(), unique=True, index=True)
+    telegram_username: Mapped[str] = mapped_column(String(), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(64))
     avatar_url: Mapped[str] = mapped_column(Text)
 
@@ -92,7 +93,7 @@ class OrganizerModel(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     login: Mapped[str] = mapped_column(String(128), unique=True)
-    password_hash: Mapped[str] = mapped_column(String(64))
+    password_hash: Mapped[str] = mapped_column(String(128))
 
     hackathons: Mapped[list["HackathonModel"]] = relationship(
         "HackathonModel", back_populates="organizer", lazy="selectin"
@@ -105,7 +106,7 @@ class HackathonModel(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255), index=True)
     description: Mapped[str] = mapped_column(Text)
-    photo_url: Mapped[str] = mapped_column(Text)
+    photo_url: Mapped[str] = mapped_column(Text, nullable=True)
 
     start_date: Mapped["Date"] = mapped_column(Date)
     end_date: Mapped["Date"] = mapped_column(Date)

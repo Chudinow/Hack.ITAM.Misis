@@ -23,11 +23,13 @@ export interface HackListResponse {
 }
 
 export const HackAPI = {
+  // Получить хакатон по ID
   getById: async (hackId: number | string): Promise<Hack> => {
     const { data } = await apiInstance.get<Hack>(`/api/hack/${hackId}`);
     return data;
   },
 
+  // Получить все хакатоны (пагинация поддерживается)
   getAll: async (
     page = 1,
     per_page = 20
@@ -39,6 +41,7 @@ export const HackAPI = {
     return data;
   },
 
+  // Получить ближайшие хакатоны
   getUpcoming: async (): Promise<HackListResponse> => {
     const { data } = await apiInstance.get<HackListResponse>(
       "/api/hacks/upcoming"

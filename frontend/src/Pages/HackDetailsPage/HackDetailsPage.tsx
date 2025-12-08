@@ -5,6 +5,19 @@ import { TeamAPI } from "../../Shared/api/TeamApi";
 import { UserAPI } from "../../Shared/api/UserApi";
 import styles from "./hack-details-page.module.css";
 
+// ===== РОЛИ ДЛЯ ФИЛЬТРА =====
+const ROLE_FILTERS = [
+  "all",
+  "frontend",
+  "backend",
+  "mobile",
+  "ml",
+  "product",
+  "designer",
+] as const;
+
+type FilterRole = (typeof ROLE_FILTERS)[number];
+
 const HackDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -21,6 +34,9 @@ const HackDetailsPage: React.FC = () => {
   const [loadingTeams, setLoadingTeams] = useState(false);
 
   const [loadingHack, setLoadingHack] = useState(true);
+
+  // Фильтр по ролям
+  const [roleFilter, setRoleFilter] = useState<FilterRole>("all");
 
   // ===== ЗАГРУЗКА ХАКАТОНА =====
   useEffect(() => {
@@ -61,7 +77,7 @@ const HackDetailsPage: React.FC = () => {
 
     try {
       const res = await TeamAPI.searchParticipants(Number(id));
-      
+
       const normalized = (res.participants ?? []).map((p: any) => ({
         id: p.id,
         name: p.profile?.user_id ?? "",
@@ -77,6 +93,12 @@ const HackDetailsPage: React.FC = () => {
       setLoadingParticipants(false);
     }
   };
+
+  // ===== ФИЛЬТРАЦИЯ УЧАСТНИКОВ =====
+  const filteredParticipants =
+    roleFilter === "all"
+      ? participants
+      : participants.filter((p) => p.role === roleFilter);
 
   // ===== ПРИГЛАШЕНИЕ УЧАСТНИКА =====
   const inviteParticipant = async (participantId: number) => {
@@ -138,7 +160,7 @@ const HackDetailsPage: React.FC = () => {
             .split(",")
             .map((t) => t.trim())
             .filter(Boolean)
-            .map((tag) => (
+            .map((tag: string) => (
               <span key={tag} className={styles.tag}>
                 {tag}
               </span>
@@ -185,6 +207,25 @@ const HackDetailsPage: React.FC = () => {
           </button>
         </div>
 
+        {/* ФИЛЬТР РОЛЕЙ */}
+        {activeTab === "participants" && (
+          <div className={styles.filterRow}>
+            {ROLE_FILTERS.map((role) => (
+              <div
+                key={role}
+                className={
+                  roleFilter === role
+                    ? styles.filterChipActive
+                    : styles.filterChip
+                }
+                onClick={() => setRoleFilter(role)}
+              >
+                {role === "all" ? "Все" : role}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* СПИСОК УЧАСТНИКОВ */}
         {activeTab === "participants" && (
           <div className={styles.participantList}>
@@ -192,11 +233,11 @@ const HackDetailsPage: React.FC = () => {
               <p className={styles.loading}>Загрузка участников...</p>
             )}
 
-            {!loadingParticipants && participants.length === 0 && (
-              <p className={styles.empty}>Пока нет участников</p>
+            {!loadingParticipants && filteredParticipants.length === 0 && (
+              <p className={styles.empty}>Нет результатов</p>
             )}
 
-            {participants.map((p) => (
+            {filteredParticipants.map((p) => (
               <div key={p.id} className={styles.participantCard}>
                 <h3 className={styles.participantName}>{p.name}</h3>
                 <p className={styles.participantRole}>Роль: {p.role}</p>

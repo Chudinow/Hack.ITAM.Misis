@@ -49,7 +49,6 @@ export const router = createBrowserRouter([
       { path: "hacks", element: <OrganizeHackathonPage /> },
       { path: "hacks/create", element: <OrganizeCreateHackPage /> },
       { path: "hacks/:id", element: <OrganizeCreateHackPage /> },
-      
     ],
   },
 

@@ -1,150 +1,247 @@
+// src/Shared/api/OrganizerApi.ts
 import { apiInstance } from "./apiInstance";
 
-/* ===============================
-      MOCK MODE
-================================= */
+/* ==========
+   TYPES
+========== */
 
-const MOCK = true;
-
-// Мок-данные
-const MOCK_HACKS = [
-  {
-    id: "1",
-    title: "ITAM HACK 2025",
-    description: "Лучший хакатон по разработке EdTech",
-    date_start: "2025-01-10",
-    date_end: "2025-01-12",
-    photo_url: "",
-  },
-  {
-    id: "2",
-    title: "Cyber Challenge",
-    description: "Хакатон по кибербезопасности",
-    date_start: "2025-02-05",
-    date_end: "2025-02-06",
-    photo_url: "",
-  },
-];
-
-/* ===============================
-      TYPES
-================================= */
-
-export interface OrganizerLoginRequest {
-  email: string;
+// auth
+export interface OrganizerLoginPayload {
+  login: string;
   password: string;
 }
 
-export interface OrganizerLoginResponse {
+export interface Token {
   access_token: string;
-  organizer: { id: string; name: string };
+  token_type: string;
 }
 
+export interface OrganizerResponse {
+  id: number;
+  login: string;
+}
+
+// hackathons
 export interface HackathonCreate {
-  title: string;
-  description?: string;
-  date_start: string;
-  date_end: string;
+  name: string;
+  description: string;
+  start_date: string; // YYYY-MM-DD
+  end_date: string;   // YYYY-MM-DD
+  tags?: string;
+  max_teams?: number;
+  min_team_size?: number;
+  max_team_size?: number;
 }
 
 export interface HackathonUpdate {
-  title?: string;
-  description?: string;
-  date_start?: string;
-  date_end?: string;
+  name?: string | null;
+  description?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  tags?: string | null;
+  max_teams?: number | null;
+  min_team_size?: number | null;
+  max_team_size?: number | null;
 }
 
 export interface HackathonResponse {
-  id: string;
-  title: string;
-  description?: string;
-  date_start: string;
-  date_end: string;
-  photo_url?: string;
+  id: number;
+  name: string;
+  description: string;
+  start_date: string;  // date
+  end_date: string;    // date
+  tags: string;
+  max_teams: number;
+  min_team_size: number;
+  max_team_size: number;
+  organizer_id: number;
+  photo_url: string | null;
+  created_at: string;
 }
 
-/* ===============================
-      ORGANIZER API
-================================= */
+// teams / participants / analytics
+export interface TeamMemberShort {
+  user_id: number;
+  name: string;
+  role: string | null;
+  approved: boolean;
+  avatar_url?: string | null;
+}
+
+export interface TeamOrgResponse {
+  id: number;
+  name: string;
+  approved: boolean;
+  members: TeamMemberShort[];
+}
+
+export interface TeamApproveResponse {
+  team_id: number;
+  approved: boolean;
+}
+
+export interface ParticipantResponse {
+  user_id: number;
+  name: string;
+  avatar_url: string;
+  has_team: boolean;
+  team_name: string | null;
+  role: string | null;
+  skills: string[];
+}
+
+export interface AnalyticsResponse {
+  total_teams: number;
+  approved_teams: number;
+  total_participants: number;
+  participants_with_team: number;
+  participants_without_team: number;
+}
+
+/* ==========
+   API
+========== */
 
 export const OrganizerApi = {
-  login: async (data: OrganizerLoginRequest): Promise<OrganizerLoginResponse> => {
-    if (MOCK) {
-      // мок авторизации
-      return {
-        access_token: "MOCK_TOKEN",
-        organizer: { id: "0", name: "Mock Admin" },
-      };
-    }
+  /* --- AUTH --- */
 
-    const res = await apiInstance.post("/organizers/login", data);
-    return res.data;
+  login: async (payload: OrganizerLoginPayload): Promise<Token> => {
+    const { data } = await apiInstance.post<Token>("/organizer/login", payload);
+    // backend сам ставит HttpOnly куки, мы их НЕ трогаем
+    return data;
   },
-};
 
-/* ===============================
-      HACKATHON API
-================================= */
+  me: async (): Promise<OrganizerResponse> => {
+    const { data } = await apiInstance.get<OrganizerResponse>("/organizer/me");
+    return data;
+  },
 
-export const OrganizerHackApi = {
+  logout: async (): Promise<void> => {
+    await apiInstance.post("/organizer/logout");
+  },
+
+  /* --- HACKATHONS --- */
+
   getMyHackathons: async (): Promise<HackathonResponse[]> => {
-    if (MOCK) return MOCK_HACKS;
-
-    const res = await apiInstance.get("/organizer/hackathons");
-    return res.data;
-  },
-
-  createHackathon: async (data: HackathonCreate): Promise<HackathonResponse> => {
-    if (MOCK) {
-      return {
-        id: Date.now().toString(),
-        photo_url: "",
-        ...data,
-      };
-    }
-
-    const res = await apiInstance.post("/organizer/hackathons", data);
-    return res.data;
-  },
-
-  getHackathonById: async (id: string): Promise<HackathonResponse> => {
-    if (MOCK) {
-      return MOCK_HACKS.find((h) => h.id === id)!;
-    }
-
-    const res = await apiInstance.get(`/organizer/hackathons/${id}`);
-    return res.data;
-  },
-
-  updateHackathon: async (id: string, data: HackathonUpdate) => {
-  if (MOCK) {
-    const original = MOCK_HACKS.find(h => h.id === id)!;
-
-    return {
-      ...original,
-      ...data,       // обновляем только изменённые поля
-      id,            // и явно указываем id только ОДИН раз
-    };
-  }
-
-  const res = await apiInstance.patch(`/organizer/hackathons/${id}`, data);
-  return res.data;
-},
-
-  uploadPhoto: async (id: string, file: File) => {
-    if (MOCK) {
-      const url = URL.createObjectURL(file);
-      return { success: true, photo_url: url };
-    }
-
-    const form = new FormData();
-    form.append("photo", file);
-
-    const res = await apiInstance.post(
-      `/organizer/hackathons/${id}/photo`,
-      form,
-      { headers: { "Content-Type": "multipart/form-data" } }
+    const { data } = await apiInstance.get<HackathonResponse[]>(
+      "/organizer/hackathons/"
     );
-    return res.data;
+    return data;
+  },
+
+  createHackathon: async (
+    payload: HackathonCreate
+  ): Promise<HackathonResponse> => {
+    const { data } = await apiInstance.post<HackathonResponse>(
+      "/organizer/hackathons/",
+      payload
+    );
+    return data;
+  },
+
+  updateHackathon: async (
+    hackathonId: number | string,
+    payload: HackathonUpdate
+  ): Promise<HackathonResponse> => {
+    const { data } = await apiInstance.patch<HackathonResponse>(
+      `/organizer/hackathons/${hackathonId}`,
+      payload
+    );
+    return data;
+  },
+
+  getHackathonById: async (
+    hackathonId: number | string
+  ): Promise<HackathonResponse> => {
+    const { data } = await apiInstance.get<HackathonResponse>(
+      `/organizer/hackathons/${hackathonId}`
+    );
+    return data;
+  },
+
+  uploadPhoto: async (
+    hackathonId: number | string,
+    file: File
+  ): Promise<void> => {
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    await apiInstance.post(
+      `/organizer/hackathons/${hackathonId}/photo`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+  },
+
+  /* --- TEAMS / PARTICIPANTS / ANALYTICS --- */
+
+  getHackathonTeams: async (
+    hackathonId: number | string
+  ): Promise<TeamOrgResponse[]> => {
+    const { data } = await apiInstance.get<TeamOrgResponse[]>(
+      `/organizer/hackathons/${hackathonId}/teams`
+    );
+    return data;
+  },
+
+  getHackathonParticipants: async (
+    hackathonId: number | string,
+    teamStatus?: string | null
+  ): Promise<ParticipantResponse[]> => {
+    const { data } = await apiInstance.get<ParticipantResponse[]>(
+      `/organizer/hackathons/${hackathonId}/participants`,
+      {
+        params: teamStatus ? { team_status: teamStatus } : undefined,
+      }
+    );
+    return data;
+  },
+
+  approveTeam: async (
+    hackathonId: number | string,
+    teamId: number,
+    approve: boolean = true
+  ): Promise<TeamApproveResponse> => {
+    const { data } = await apiInstance.post<TeamApproveResponse>(
+      `/organizer/hackathons/${hackathonId}/teams/${teamId}/approve`,
+      null,
+      { params: { approve } }
+    );
+    return data;
+  },
+
+  assignParticipant: async (
+    hackathonId: number | string,
+    userId: number,
+    teamId: number,
+    role: string
+  ) => {
+    const { data } = await apiInstance.post(
+      `/organizer/hackathons/${hackathonId}/participants/${userId}/assign`,
+      null,
+      {
+        params: { team_id: teamId, role },
+      }
+    );
+    return data;
+  },
+
+  getAnalytics: async (
+    hackathonId: number | string
+  ): Promise<AnalyticsResponse> => {
+    const { data } = await apiInstance.get<AnalyticsResponse>(
+      `/organizer/hackathons/${hackathonId}/analytics`
+    );
+    return data;
+  },
+
+  exportTeamsCsv: async (hackathonId: number | string): Promise<Blob> => {
+    const { data } = await apiInstance.get(
+      `/organizer/hackathons/${hackathonId}/export/csv`,
+      { responseType: "blob" }
+    );
+    return data as Blob;
   },
 };

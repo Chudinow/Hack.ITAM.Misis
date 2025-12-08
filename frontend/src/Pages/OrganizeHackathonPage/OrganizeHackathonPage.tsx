@@ -1,7 +1,11 @@
+// src/pages/organizer/OrganizeHackathonPage.tsx
 import React, { useEffect, useState } from "react";
 import styles from "./organize-hackathon-page.module.css";
 import { useNavigate } from "react-router-dom";
-import { OrganizerHackApi, HackathonResponse } from "../../Shared/api/OrganizerApi";
+import {
+  OrganizerApi,
+  HackathonResponse,
+} from "../../Shared/api/OrganizerApi";
 
 const OrganizeHackathonPage: React.FC = () => {
   const navigate = useNavigate();
@@ -11,7 +15,7 @@ const OrganizeHackathonPage: React.FC = () => {
   useEffect(() => {
     async function load() {
       try {
-        const res = await OrganizerHackApi.getMyHackathons();
+        const res = await OrganizerApi.getMyHackathons();
         setHacks(res);
       } catch (e) {
         console.error("Ошибка загрузки хакатонов:", e);
@@ -29,8 +33,7 @@ const OrganizeHackathonPage: React.FC = () => {
       <h1 className={styles.title}>Мои хакатоны</h1>
 
       <div className={styles.grid}>
-
-        {/* Создать */}
+        {/* Карточка "Создать" */}
         <div
           className={styles.createCard}
           onClick={() => navigate("/organizer/hacks/create")}
@@ -38,18 +41,19 @@ const OrganizeHackathonPage: React.FC = () => {
           <span className={styles.plus}>+</span>
         </div>
 
-        {/* Существующие */}
+        {/* Список хакатонов */}
         {hacks.map((h) => (
           <div
             key={h.id}
             className={styles.hackCard}
             onClick={() => navigate(`/organizer/hacks/${h.id}`)}
           >
-            <h3>{h.title}</h3>
-            <p>{h.date_start} — {h.date_end}</p>
+            <h3>{h.name}</h3>
+            <p>
+              {h.start_date} — {h.end_date}
+            </p>
           </div>
         ))}
-
       </div>
     </div>
   );

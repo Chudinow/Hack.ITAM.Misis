@@ -7,7 +7,7 @@ import { apiInstance } from "./apiInstance";
 
 // auth
 export interface OrganizerLoginPayload {
-  login: string;
+  email: string;
   password: string;
 }
 

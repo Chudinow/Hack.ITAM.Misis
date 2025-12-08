@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import { Hack, HackAPI } from "../../Shared/api/HackApi";
 import { TeamAPI } from "../../Shared/api/TeamApi";
 import { UserAPI } from "../../Shared/api/UserApi";
+
+import ParticipantsList from "./components/ParticipantsList";
+import TeamsList from "./components/TeamsList";
+
 import styles from "./hack-details-page.module.css";
 
-// ===== РОЛИ ДЛЯ ФИЛЬТРА =====
+// ==== Фильтры ролей ====
 const ROLE_FILTERS = [
   "all",
   "frontend",
@@ -27,50 +32,47 @@ const HackDetailsPage: React.FC = () => {
   const [activeTab, setActiveTab] =
     useState<"participants" | "teams" | null>(null);
 
+  const [loadingHack, setLoadingHack] = useState(true);
+
+  // Участники
   const [participants, setParticipants] = useState<any[]>([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
 
+  // Команды
   const [teams, setTeams] = useState<any[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
-  const [loadingHack, setLoadingHack] = useState(true);
-
-  // Фильтр по ролям
+  // Фильтр
   const [roleFilter, setRoleFilter] = useState<FilterRole>("all");
 
-  // ===== ЗАГРУЗКА ХАКАТОНА =====
+  // ==== Загрузка хакатона ====
   useEffect(() => {
-    async function loadHack() {
+    async function load() {
       try {
         if (!id) return;
         const data = await HackAPI.getById(id);
         setHack(data);
-      } catch (error) {
-        console.error("Ошибка загрузки хакатона:", error);
+      } catch (e) {
+        console.error("Ошибка загрузки хакатона:", e);
       } finally {
         setLoadingHack(false);
       }
     }
 
-    loadHack();
+    load();
   }, [id]);
 
-  if (loadingHack) {
-    return <div className={styles.loading}>Загрузка...</div>;
-  }
+  if (loadingHack) return <div className={styles.loading}>Загрузка...</div>;
+  if (!hack) return <div className={styles.loading}>Хакатон не найден</div>;
 
-  if (!hack) {
-    return <div className={styles.loading}>Хакатон не найден</div>;
-  }
-
-  // ===== НАВИГАЦИЯ =====
+  // Навигация
   const handleFindTeam = () =>
     navigate(`/hackdetails/${id}/participant-form`);
 
   const handleHaveTeam = () =>
     navigate(`/hackdetails/${id}/team-form`);
 
-  // ===== ЗАГРУЗКА УЧАСТНИКОВ =====
+  // ==== Участники ====
   const loadParticipants = async () => {
     if (!id) return;
     setLoadingParticipants(true);
@@ -94,13 +96,11 @@ const HackDetailsPage: React.FC = () => {
     }
   };
 
-  // ===== ФИЛЬТРАЦИЯ УЧАСТНИКОВ =====
   const filteredParticipants =
     roleFilter === "all"
       ? participants
       : participants.filter((p) => p.role === roleFilter);
 
-  // ===== ПРИГЛАШЕНИЕ УЧАСТНИКА =====
   const inviteParticipant = async (participantId: number) => {
     try {
       const me = await UserAPI.checkAuth();
@@ -114,7 +114,7 @@ const HackDetailsPage: React.FC = () => {
     }
   };
 
-  // ===== ЗАГРУЗКА КОМАНД =====
+  // ==== Команды ====
   const loadTeams = async () => {
     if (!id) return;
     setLoadingTeams(true);
@@ -138,7 +138,6 @@ const HackDetailsPage: React.FC = () => {
     }
   };
 
-  // ===== ОТПРАВКА ЗАЯВКИ =====
   const applyToTeam = async (teamId: number) => {
     try {
       const me = await UserAPI.checkAuth();
@@ -152,6 +151,7 @@ const HackDetailsPage: React.FC = () => {
 
   return (
     <div className={styles.page + " " + styles.fadePage}>
+      {/* HEADER */}
       <div className={styles.headerCard + " " + styles.fadeBlock}>
         <h1 className={styles.title}>{hack.name}</h1>
 
@@ -173,7 +173,7 @@ const HackDetailsPage: React.FC = () => {
           {hack.description}
         </p>
 
-        {/* КНОПКИ */}
+        {/* Основные кнопки */}
         <button className={styles.mainButton} onClick={handleFindTeam}>
           Найти команду
         </button>
@@ -182,7 +182,7 @@ const HackDetailsPage: React.FC = () => {
           У меня есть команда
         </button>
 
-        {/* ТАБЫ */}
+        {/* Табы */}
         <div className={styles.selectorRow}>
           <button
             className={
@@ -207,7 +207,7 @@ const HackDetailsPage: React.FC = () => {
           </button>
         </div>
 
-        {/* ФИЛЬТР РОЛЕЙ */}
+        {/* Фильтр ролей (только для участников) */}
         {activeTab === "participants" && (
           <div className={styles.filterRow}>
             {ROLE_FILTERS.map((role) => (
@@ -226,61 +226,22 @@ const HackDetailsPage: React.FC = () => {
           </div>
         )}
 
-        {/* СПИСОК УЧАСТНИКОВ */}
+        {/* Список участников */}
         {activeTab === "participants" && (
-          <div className={styles.participantList}>
-            {loadingParticipants && (
-              <p className={styles.loading}>Загрузка участников...</p>
-            )}
-
-            {!loadingParticipants && filteredParticipants.length === 0 && (
-              <p className={styles.empty}>Нет результатов</p>
-            )}
-
-            {filteredParticipants.map((p) => (
-              <div key={p.id} className={styles.participantCard}>
-                <h3 className={styles.participantName}>{p.name}</h3>
-                <p className={styles.participantRole}>Роль: {p.role}</p>
-
-                <button
-                  className={styles.inviteButton}
-                  onClick={() => inviteParticipant(p.id)}
-                >
-                  Пригласить в команду
-                </button>
-              </div>
-            ))}
-          </div>
+          <ParticipantsList
+            loading={loadingParticipants}
+            participants={filteredParticipants}
+            onInvite={inviteParticipant}
+          />
         )}
 
-        {/* СПИСОК КОМАНД */}
+        {/* Список команд */}
         {activeTab === "teams" && (
-          <div className={styles.participantList}>
-            {loadingTeams && (
-              <p className={styles.loading}>Загрузка команд...</p>
-            )}
-
-            {!loadingTeams && teams.length === 0 && (
-              <p className={styles.empty}>Пока нет команд</p>
-            )}
-
-            {teams.map((team) => (
-              <div key={team.id} className={styles.participantCard}>
-                <h3 className={styles.participantName}>{team.name}</h3>
-
-                <p className={styles.participantRole}>
-                  Ищут: {team.roles.join(", ")}
-                </p>
-
-                <button
-                  className={styles.inviteButton}
-                  onClick={() => applyToTeam(team.id)}
-                >
-                  Подать заявку
-                </button>
-              </div>
-            ))}
-          </div>
+          <TeamsList
+            loading={loadingTeams}
+            teams={teams}
+            onApply={applyToTeam}
+          />
         )}
       </div>
     </div>

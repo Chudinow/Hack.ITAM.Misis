@@ -1,5 +1,3 @@
-// src/pages/hack-details/TeamsList.tsx
-
 import React from "react";
 import styles from "./hack-details-page.module.css";
 

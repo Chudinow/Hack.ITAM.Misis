@@ -18,22 +18,9 @@
       - "8000:8000"
     depends_on:
       - postgres
-    environment:
-      DATABASE_URL: postgresql://hackathon:misis2024@postgres:5432/hackathon_db
     volumes:
       - ./backend:/app
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-
-  frontend:
-    build: ./frontend
-    container_name: hackathon_frontend
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
 volumes:
   postgres_data:

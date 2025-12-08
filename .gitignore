@@ -40,3 +40,6 @@ Thumbs.db
 
 # Docker
 *.log
+
+.env
+backend/organize/schemas/auth.py

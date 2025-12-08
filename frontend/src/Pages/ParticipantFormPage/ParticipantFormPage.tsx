@@ -17,6 +17,7 @@ const ROLE_OPTIONS: RoleType[] = [
   "designer",
 ];
 
+// ВСЕГДА показываем эти навыки
 const FALLBACK_SKILLS: Skill[] = [
   { id: 1, name: "JS", type: "hard" },
   { id: 2, name: "TS", type: "hard" },
@@ -35,11 +36,13 @@ const ParticipantFormPage: React.FC = () => {
   const { id: hackId } = useParams();
 
   const [hack, setHack] = useState<any>(null);
-  const [skillsList, setSkillsList] = useState<Skill[]>([]);
+
+  // ВСЕГДА показываем fallback-список навыков!
+  const [skillsList] = useState<Skill[]>(FALLBACK_SKILLS);
 
   const [skills, setSkills] = useState<number[]>([]);
   const [about, setAbout] = useState("");
-  const [role, setRole] = useState<RoleType | "">("");
+  const [role, setRole] = useState<RoleType | null>(null);
 
   const [profileId, setProfileId] = useState<number | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -55,40 +58,40 @@ const ParticipantFormPage: React.FC = () => {
         setUserId(auth.id);
         setUserName(auth.name);
 
-        // Попытка загрузить профиль
+        // Загружаем профиль
         let profile;
         try {
           profile = await ProfileAPI.getProfile(auth.id);
         } catch {
-          console.warn("Профиль отсутствует — создаём tmp-пустой профиль");
           profile = {
-            id: auth.id,           // временно профиль_id = user_id
+            id: auth.id,
             user_id: auth.id,
             about: "",
-            role: "",
+            role: null,
             skills: [],
           };
-
-          // =========  
-          // ВОТ ТУТ ПОТОМ (в проде) МОЖНО ВЕРНУТЬ РЕДИРЕКТ
-          // navigate("/create-profile"); // ← как только бек будет готов
-          // =========
         }
 
         setProfileId(profile.id);
         setAbout(profile.about ?? "");
-        setRole((profile.role as RoleType) ?? "");
-        setSkills(profile.skills?.map((s: Skill) => s.id) ?? []);
+        setRole(profile.role ?? null);
 
+        // Из профиля нам нужны только IDs навыков
+        const extractedSkillIds =
+          Array.isArray(profile.skills)
+            ? profile.skills
+                .map((s: any) => Number(s.id))
+                .filter((x) => !isNaN(x))
+            : [];
+
+        setSkills(extractedSkillIds);
+
+        // Загружаем хакатон
         const hackData = await HackAPI.getById(Number(hackId));
         setHack(hackData);
 
-        const apiSkills = await UserAPI.getSkills().catch(() => FALLBACK_SKILLS);
-        setSkillsList(apiSkills);
       } catch (e) {
-        console.error("Ошибка загрузки профиля:", e);
-        // В DEV НИЧЕГО НЕ ДЕЛАЕМ
-        // В ПРОДЕ ЗДЕСЬ ТОЖЕ МОЖНО ДОБАВИТЬ РЕДИРЕКТ
+        console.error("Ошибка загрузки:", e);
       } finally {
         setLoading(false);
       }
@@ -99,12 +102,18 @@ const ParticipantFormPage: React.FC = () => {
 
   const toggleSkill = (id: number) => {
     setSkills((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
+      prev.includes(id)
+        ? prev.filter((s) => s !== id)
+        : [...prev, id]
     );
   };
 
   const handleSave = async () => {
     if (!userId || !profileId) return;
+    if (!role) {
+      alert("Выберите вашу основную роль");
+      return;
+    }
 
     try {
       setSaving(true);
@@ -112,7 +121,7 @@ const ParticipantFormPage: React.FC = () => {
       await ProfileAPI.updateProfile(profileId, userId, {
         user_id: userId,
         about,
-        role: role as RoleType,
+        role,
         skills_id: skills,
       });
 
@@ -153,7 +162,7 @@ const ParticipantFormPage: React.FC = () => {
           <label className={styles.label}>Основная роль:</label>
           <select
             className={styles.select}
-            value={role}
+            value={role ?? ""}
             onChange={(e) => setRole(e.target.value as RoleType)}
           >
             <option value="">Выберите роль</option>

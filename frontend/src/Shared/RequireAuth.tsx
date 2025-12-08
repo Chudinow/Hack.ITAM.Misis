@@ -1,41 +1,39 @@
 import { Navigate, Outlet } from "react-router-dom";
-// import { useEffect, useState } from "react";
-// import { UserAPI } from "./api/UserApi";
+import { useEffect, useState } from "react";
+import { UserAPI } from "../Shared/api/UserApi";
 
 export default function RequireAuth() {
-  // const [loading, setLoading] = useState(true);
-  // const [authorized, setAuthorized] = useState(false);
+  const [authorized, setAuthorized] = useState<boolean | null>(null);
 
-  // useEffect(() => {
-  //   let isMounted = true;
+  useEffect(() => {
+    let active = true;
 
-  //   UserAPI.checkAuth()
-  //     .then(() => {
-  //       if (isMounted) {
-  //         console.log("AUTH OK");
-  //         setAuthorized(true);
-  //       }
-  //     })
-  //     .catch(() => {
-  //       if (isMounted) {
-  //         console.log("AUTH FAIL");
-  //         setAuthorized(false);
-  //       }
-  //     })
-  //     .finally(() => {
-  //       if (isMounted) {
-  //         console.log("FINALLY");
-  //         setLoading(false);
-  //       }
-  //     });
+    async function check() {
+      try {
+        await UserAPI.checkAuth(); // если 401 → catch
+        if (active) setAuthorized(true);
+      } catch {
+        if (active) setAuthorized(false);
+      }
+    }
 
-  //   return () => {
-  //     isMounted = false;
-  //   };
-  // }, []);
+    check();
 
-  // if (loading) return <div>Loading...</div>;
+    return () => {
+      active = false; // предотвращает утечки
+    };
+  }, []);
 
-  // return authorized ? <Outlet /> : <Navigate to="/auth" replace />;
-  return <Outlet />
+  // Пока проверяем → отображаем загрузку
+  if (authorized === null) {
+    return <div style={{ color: "#fff", padding: "2rem" }}>Загрузка...</div>;
+  }
+
+  // Если авторизация ОК → пропускаем
+  if (authorized === true) {
+    return <Outlet />;
+  }
+
+  // Если НЕ авторизован → отправляем на страницу логина
+  return <Navigate to="/auth" replace />;
 }

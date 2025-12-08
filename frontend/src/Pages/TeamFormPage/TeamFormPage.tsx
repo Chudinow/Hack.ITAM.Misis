@@ -8,7 +8,7 @@ import { TeamAPI } from "../../Shared/api/TeamApi";
 import { UserAPI } from "../../Shared/api/UserApi";
 import type { RoleType } from "../../Shared/api/TeamApi";
 
-// Роли из твоего нового RoleType + "никого"
+// Роли из API (включая "никого")
 const ROLE_OPTIONS: RoleType[] = [
   "никого",
   "backend",
@@ -34,50 +34,58 @@ const TeamFormPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // =============================
+  // 1. Загрузка пользователя и хакатона
+  // =============================
   useEffect(() => {
     async function load() {
       try {
+        // Проверяем авторизацию
         const auth = await UserAPI.checkAuth();
         setUserId(auth.id);
 
+        // Загружаем хакатон
         const hackData = await HackAPI.getById(Number(hackId));
         setHack(hackData);
       } catch (e) {
-        console.error("Ошибка загрузки страницы:", e);
+        console.error("Ошибка загрузки TeamFormPage:", e);
+
+        // На проде лучше перенаправлять на авторизацию
+        navigate("/auth");
       } finally {
         setLoading(false);
       }
     }
 
     load();
-  }, [hackId]);
+  }, [hackId, navigate]);
 
-  // Логика выбора ролей
+  // =============================
+  // 2. Логика выбора ролей
+  // =============================
   const toggleRole = (role: RoleType) => {
-    // Если выбрали "никого"
     if (role === "никого") {
-      // Если "никого" уже выбрана → снимаем выбор
       setFindRoles((prev) => (prev.includes("никого") ? [] : ["никого"]));
       return;
     }
 
-    // Если выбрана другая роль → убираем "никого"
     setFindRoles((prev) => {
-      const withoutNone = prev.filter((r) => r !== "никого");
+      const cleaned = prev.filter((r) => r !== "никого");
 
-      // Если уже выбрана → убираем
-      if (withoutNone.includes(role)) {
-        return withoutNone.filter((r) => r !== role);
+      if (cleaned.includes(role)) {
+        return cleaned.filter((r) => r !== role);
       }
 
-      // Добавляем новую роль
-      return [...withoutNone, role];
+      return [...cleaned, role];
     });
   };
 
+  // =============================
+  // 3. Создание команды
+  // =============================
   const handleSave = async () => {
     if (!userId) {
-      alert("Ошибка: не удалось определить пользователя");
+      alert("Ошибка: пользователь не авторизован");
       return;
     }
 
@@ -94,10 +102,9 @@ const TeamFormPage: React.FC = () => {
     try {
       setSaving(true);
 
-      // ВАЖНО:
-      // Если выбрана "никого", то find_roles → []
-      const finalRoles =
-        findRoles.includes("никого") ? [] : (findRoles as RoleType[]);
+      // Если выбрана "никого" → отправляем пустой массив
+      const finalRoles: RoleType[] =
+        findRoles.includes("никого") ? [] : findRoles;
 
       await TeamAPI.createTeam(Number(hackId), userId, {
         name: teamName,
@@ -114,7 +121,16 @@ const TeamFormPage: React.FC = () => {
     }
   };
 
+  // =============================
+  // 4. Статус загрузки
+  // =============================
   if (loading) return <div className={styles.loading}>Загрузка...</div>;
+
+  // Безопасные теги
+  const tags: string[] =
+    typeof hack?.tags === "string"
+      ? hack.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+      : [];
 
   return (
     <div className={styles.page}>
@@ -123,7 +139,7 @@ const TeamFormPage: React.FC = () => {
         <h1 className={styles.title}>{hack?.name}</h1>
 
         <div className={styles.tagRow}>
-          {(hack?.tags?.split(",") ?? []).map((tag: string) => (
+          {tags.map((tag: string) => (
             <span key={tag} className={styles.tag}>
               {tag}
             </span>
@@ -151,7 +167,7 @@ const TeamFormPage: React.FC = () => {
           <label className={styles.label}>Кого ищете:</label>
 
           <div className={styles.skillsGrid}>
-            {ROLE_OPTIONS.map((role) => (
+            {ROLE_OPTIONS.map((role: RoleType) => (
               <div
                 key={role}
                 className={

@@ -5,60 +5,14 @@ import { TeamAPI } from "../../Shared/api/TeamApi";
 import { UserAPI } from "../../Shared/api/UserApi";
 import { useEffect, useState } from "react";
 
-// ===== MOCK DATA =====
-const MOCK = true;
-
-const MOCK_PARTICIPANTS = [
-  {
-    participant_id: 101,
-    name: "Максим Волков",
-    role: "frontend",
-    skills: [{ id: 1, name: "React" }],
-  },
-  {
-    participant_id: 102,
-    name: "София Лебедева",
-    role: "ml",
-    skills: [{ id: 2, name: "TensorFlow" }],
-  },
-  {
-    participant_id: 103,
-    name: "Илья Морозов",
-    role: "backend",
-    skills: [{ id: 3, name: "FastAPI" }],
-  },
-];
-
-const MOCK_TEAMS = [
-  {
-    id: 501,
-    name: "CyberFox",
-    about: "Frontend + Mobile",
-    empty_roles: [{ role: "backend" }, { role: "ml" }],
-  },
-  {
-    id: 502,
-    name: "DeepVision",
-    about: "ML команда для CV",
-    empty_roles: [{ role: "frontend" }],
-  },
-  {
-    id: 503,
-    name: "Rocket Labs",
-    about: "Fullstack + Product",
-    empty_roles: [{ role: "designer" }, { role: "mobile" }],
-  },
-];
-
-// =====================
-
 const HackDetailsPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const [hack, setHack] = useState<Hack | null>(null);
 
-  const [activeTab, setActiveTab] = useState<"participants" | "teams" | null>(null);
+  const [activeTab, setActiveTab] =
+    useState<"participants" | "teams" | null>(null);
 
   const [participants, setParticipants] = useState<any[]>([]);
   const [loadingParticipants, setLoadingParticipants] = useState(false);
@@ -66,29 +20,39 @@ const HackDetailsPage: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
 
+  const [loadingHack, setLoadingHack] = useState(true);
+
   // ===== ЗАГРУЗКА ХАКАТОНА =====
   useEffect(() => {
-    if (!id) return;
-
     async function loadHack() {
       try {
-        const data = await HackAPI.getById(id!);
+        if (!id) return;
+        const data = await HackAPI.getById(id);
         setHack(data);
       } catch (error) {
         console.error("Ошибка загрузки хакатона:", error);
+      } finally {
+        setLoadingHack(false);
       }
     }
 
     loadHack();
   }, [id]);
 
-  if (!hack) {
+  if (loadingHack) {
     return <div className={styles.loading}>Загрузка...</div>;
   }
 
+  if (!hack) {
+    return <div className={styles.loading}>Хакатон не найден</div>;
+  }
+
   // ===== НАВИГАЦИЯ =====
-  const handleFindTeam = () => navigate(`/hackdetails/${id}/participant-form`);
-  const handleHaveTeam = () => navigate(`/hackdetails/${id}/team-form`);
+  const handleFindTeam = () =>
+    navigate(`/hackdetails/${id}/participant-form`);
+
+  const handleHaveTeam = () =>
+    navigate(`/hackdetails/${id}/team-form`);
 
   // ===== ЗАГРУЗКА УЧАСТНИКОВ =====
   const loadParticipants = async () => {
@@ -96,19 +60,13 @@ const HackDetailsPage: React.FC = () => {
     setLoadingParticipants(true);
 
     try {
-      let res;
-
-      if (MOCK) {
-        res = MOCK_PARTICIPANTS;
-      } else {
-        res = await TeamAPI.searchParticipants(Number(id));
-      }
+      const res = await TeamAPI.searchParticipants(Number(id));
 
       const normalized = res.map((p: any) => ({
         id: p.participant_id,
         name: p.name,
         role: p.role,
-        skills: p.skills,
+        skills: p.skills ?? [],
       }));
 
       setParticipants(normalized);
@@ -140,19 +98,13 @@ const HackDetailsPage: React.FC = () => {
     setLoadingTeams(true);
 
     try {
-      let res;
-
-      if (MOCK) {
-        res = MOCK_TEAMS;
-      } else {
-        res = await TeamAPI.searchEmpty(Number(id));
-      }
+      const res = await TeamAPI.searchEmpty(Number(id));
 
       const normalized = res.map((t: any) => ({
         id: t.id,
         name: t.name,
         about: t.about,
-        roles: t.empty_roles.map((r: any) => r.role),
+        roles: t.empty_roles?.map((r: any) => r.role) ?? [],
       }));
 
       setTeams(normalized);
@@ -164,30 +116,33 @@ const HackDetailsPage: React.FC = () => {
     }
   };
 
-  // ===== ОТПРАВКА ЗАЯВКИ В КОМАНДУ =====
+  // ===== ОТПРАВКА ЗАЯВКИ =====
   const applyToTeam = async (teamId: number) => {
     try {
       const me = await UserAPI.checkAuth();
       await TeamAPI.apply(Number(id), teamId, me.id);
       alert("Заявка отправлена!");
     } catch (e) {
-      console.error("Ошибка заявки:", e);
+      console.error("Ошибка отправки заявки:", e);
       alert("Не удалось отправить заявку");
     }
   };
 
   return (
     <div className={styles.page + " " + styles.fadePage}>
-
       <div className={styles.headerCard + " " + styles.fadeBlock}>
         <h1 className={styles.title}>{hack.name}</h1>
 
         <div className={styles.tagRow}>
-          {hack.tags?.split(",").map((t) => (
-            <span key={t.trim()} className={styles.tag}>
-              {t.trim()}
-            </span>
-          ))}
+          {(hack.tags ?? "")
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+            .map((tag) => (
+              <span key={tag} className={styles.tag}>
+                {tag}
+              </span>
+            ))}
         </div>
       </div>
 
@@ -196,7 +151,7 @@ const HackDetailsPage: React.FC = () => {
           {hack.description}
         </p>
 
-        {/* ОСНОВНЫЕ КНОПКИ */}
+        {/* КНОПКИ */}
         <button className={styles.mainButton} onClick={handleFindTeam}>
           Найти команду
         </button>
@@ -205,7 +160,7 @@ const HackDetailsPage: React.FC = () => {
           У меня есть команда
         </button>
 
-        {/* ПЕРЕКЛЮЧАТЕЛИ */}
+        {/* ТАБЫ */}
         <div className={styles.selectorRow}>
           <button
             className={
@@ -233,7 +188,9 @@ const HackDetailsPage: React.FC = () => {
         {/* СПИСОК УЧАСТНИКОВ */}
         {activeTab === "participants" && (
           <div className={styles.participantList}>
-            {loadingParticipants && <p className={styles.loading}>Загрузка участников...</p>}
+            {loadingParticipants && (
+              <p className={styles.loading}>Загрузка участников...</p>
+            )}
 
             {!loadingParticipants && participants.length === 0 && (
               <p className={styles.empty}>Пока нет участников</p>
@@ -258,7 +215,9 @@ const HackDetailsPage: React.FC = () => {
         {/* СПИСОК КОМАНД */}
         {activeTab === "teams" && (
           <div className={styles.participantList}>
-            {loadingTeams && <p className={styles.loading}>Загрузка команд...</p>}
+            {loadingTeams && (
+              <p className={styles.loading}>Загрузка команд...</p>
+            )}
 
             {!loadingTeams && teams.length === 0 && (
               <p className={styles.empty}>Пока нет команд</p>
@@ -282,7 +241,6 @@ const HackDetailsPage: React.FC = () => {
             ))}
           </div>
         )}
-
       </div>
     </div>
   );

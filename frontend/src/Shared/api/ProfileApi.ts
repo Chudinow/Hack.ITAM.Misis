@@ -2,6 +2,7 @@ import { apiInstance } from "./apiInstance";
 import type { Skill } from "./UserApi";
 
 export type RoleType =
+  |"никого"
   | "backend"
   | "frontend"
   | "mobile"
@@ -12,8 +13,8 @@ export type RoleType =
 export interface Profile {
   id: number;
   user_id: number;
-  about?: string | null;
-  role: RoleType;
+  about: string | null;
+  role: RoleType | null;
   skills: Skill[];
 }
 
@@ -26,7 +27,9 @@ export interface EditProfilePayload {
 
 export const ProfileAPI = {
   getProfile: async (userId: number): Promise<Profile> => {
-    const { data } = await apiInstance.get(`/api/user/${userId}/profile`);
+    const { data } = await apiInstance.get<Profile>(
+      `/api/user/${userId}/profile`
+    );
     return data;
   },
 
@@ -35,7 +38,7 @@ export const ProfileAPI = {
     userId: number,
     payload: EditProfilePayload
   ): Promise<Profile> => {
-    const { data } = await apiInstance.put(
+    const { data } = await apiInstance.put<Profile>(
       `/api/user/${profileId}/profile?user_id=${userId}`,
       payload
     );

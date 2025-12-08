@@ -5,6 +5,7 @@ import styles from "./participant-form-page.module.css";
 import { HackAPI } from "../../Shared/api/HackApi";
 import { UserAPI } from "../../Shared/api/UserApi";
 import { ProfileAPI } from "../../Shared/api/ProfileApi";
+
 import type { Skill } from "../../Shared/api/UserApi";
 import type { RoleType } from "../../Shared/api/ProfileApi";
 
@@ -17,7 +18,7 @@ const ROLE_OPTIONS: RoleType[] = [
   "designer",
 ];
 
-// ВСЕГДА показываем эти навыки
+// Список навыков, который ВСЕГДА показывается
 const FALLBACK_SKILLS: Skill[] = [
   { id: 1, name: "JS", type: "hard" },
   { id: 2, name: "TS", type: "hard" },
@@ -37,12 +38,11 @@ const ParticipantFormPage: React.FC = () => {
 
   const [hack, setHack] = useState<any>(null);
 
-  // ВСЕГДА показываем fallback-список навыков!
-  const [skillsList] = useState<Skill[]>(FALLBACK_SKILLS);
+  const [skillsList] = useState<Skill[]>(FALLBACK_SKILLS); // ВСЕГДА показываем fallback навыки
 
   const [skills, setSkills] = useState<number[]>([]);
   const [about, setAbout] = useState("");
-  const [role, setRole] = useState<RoleType | null>(null);
+  const [role, setRole] = useState<RoleType | "">("");
 
   const [profileId, setProfileId] = useState<number | null>(null);
   const [userId, setUserId] = useState<number | null>(null);
@@ -54,15 +54,17 @@ const ParticipantFormPage: React.FC = () => {
   useEffect(() => {
     async function load() {
       try {
+        // 1. Авторизация
         const auth = await UserAPI.checkAuth();
         setUserId(auth.id);
         setUserName(auth.name);
 
-        // Загружаем профиль
+        // 2. Загрузка профиля
         let profile;
         try {
           profile = await ProfileAPI.getProfile(auth.id);
         } catch {
+          // Профиля нет — создаём локальный пустой вариант
           profile = {
             id: auth.id,
             user_id: auth.id,
@@ -74,9 +76,9 @@ const ParticipantFormPage: React.FC = () => {
 
         setProfileId(profile.id);
         setAbout(profile.about ?? "");
-        setRole(profile.role ?? null);
+        setRole(profile.role ?? "");
 
-        // Из профиля нам нужны только IDs навыков
+        // 3. Вытаскиваем skill_ids из профиля
         const extractedSkillIds =
           Array.isArray(profile.skills)
             ? profile.skills
@@ -86,7 +88,7 @@ const ParticipantFormPage: React.FC = () => {
 
         setSkills(extractedSkillIds);
 
-        // Загружаем хакатон
+        // 4. Загружаем хакатон
         const hackData = await HackAPI.getById(Number(hackId));
         setHack(hackData);
 
@@ -100,16 +102,17 @@ const ParticipantFormPage: React.FC = () => {
     load();
   }, [hackId]);
 
+  // Выбор навыка
   const toggleSkill = (id: number) => {
     setSkills((prev) =>
-      prev.includes(id)
-        ? prev.filter((s) => s !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
   };
 
+  // Сохранение профиля
   const handleSave = async () => {
     if (!userId || !profileId) return;
+
     if (!role) {
       alert("Выберите вашу основную роль");
       return;
@@ -121,7 +124,7 @@ const ParticipantFormPage: React.FC = () => {
       await ProfileAPI.updateProfile(profileId, userId, {
         user_id: userId,
         about,
-        role,
+        role: role as RoleType,
         skills_id: skills,
       });
 
@@ -136,13 +139,19 @@ const ParticipantFormPage: React.FC = () => {
 
   if (loading) return <div className={styles.loading}>Загрузка...</div>;
 
+  // Tags безопасно типизируем
+  const tags: string[] =
+    typeof hack?.tags === "string"
+      ? hack.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+      : [];
+
   return (
     <div className={styles.page}>
       <div className={styles.headerCard}>
         <h1 className={styles.title}>{hack?.name ?? ""}</h1>
 
         <div className={styles.tagRow}>
-          {(hack?.tags?.split(",") ?? []).map((tag: string) => (
+          {tags.map((tag: string) => (
             <span key={tag} className={styles.tag}>
               {tag}
             </span>
@@ -153,20 +162,22 @@ const ParticipantFormPage: React.FC = () => {
       <div className={styles.formWrapper}>
         <h2 className={styles.bigTitle}>Анкета участника</h2>
 
+        {/* Имя */}
         <div className={styles.field}>
           <label className={styles.label}>Имя:</label>
           <input className={styles.input} value={userName} readOnly />
         </div>
 
+        {/* Основная роль */}
         <div className={styles.field}>
           <label className={styles.label}>Основная роль:</label>
           <select
             className={styles.select}
-            value={role ?? ""}
+            value={role}
             onChange={(e) => setRole(e.target.value as RoleType)}
           >
             <option value="">Выберите роль</option>
-            {ROLE_OPTIONS.map((r) => (
+            {ROLE_OPTIONS.map((r: RoleType) => (
               <option key={r} value={r}>
                 {r}
               </option>
@@ -174,11 +185,12 @@ const ParticipantFormPage: React.FC = () => {
           </select>
         </div>
 
+        {/* Навыки */}
         <div className={styles.field}>
           <label className={styles.label}>Навыки:</label>
 
           <div className={styles.skillsGrid}>
-            {skillsList.map((s) => (
+            {skillsList.map((s: Skill) => (
               <div
                 key={s.id}
                 className={
@@ -194,6 +206,7 @@ const ParticipantFormPage: React.FC = () => {
           </div>
         </div>
 
+        {/* О себе */}
         <div className={styles.field}>
           <label className={styles.label}>О себе:</label>
           <textarea
@@ -204,6 +217,7 @@ const ParticipantFormPage: React.FC = () => {
           />
         </div>
 
+        {/* Кнопка сохранения */}
         <button
           className={styles.submitButton}
           onClick={handleSave}

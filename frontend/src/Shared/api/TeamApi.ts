@@ -1,13 +1,7 @@
 import { apiInstance } from "./apiInstance";
+import type { RoleType as ProfileRoleType } from "./ProfileApi";
 
-export type RoleType =
-  | "никого"
-  | "backend"
-  | "frontend"
-  | "mobile"
-  | "ml"
-  | "product"
-  | "designer";
+export type RoleType = ProfileRoleType | "никого";
 
 export interface TeamCreatePayload {
   name: string;

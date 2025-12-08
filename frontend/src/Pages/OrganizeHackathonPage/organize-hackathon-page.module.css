@@ -1,0 +1,188 @@
+.page {
+  width: 100%;
+  min-height: 100vh;
+
+  padding: 6rem 5rem 3rem 5rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.title {
+  font-size: clamp(2.5rem, 5vw, 5rem);
+  font-weight: 800;
+  color: #ffffff;
+
+  margin: 0;
+  margin-bottom: 2rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4rem;
+  padding-left: 1rem;
+}
+
+.createCard {
+  width: clamp(16rem, 28vw, 23rem);
+  height: clamp(10rem, 16vw, 15rem);
+
+  background: rgba(214, 155, 255, 0.25);
+  border-radius: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+  backdrop-filter: blur(6px);
+
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.createCard:hover {
+  transform: scale(1.04);
+}
+
+.plus {
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 200;
+  line-height: 1;
+  color: #ffffff;
+}
+
+.hackCard {
+  width: clamp(20rem, 28vw, 23rem);
+  height: clamp(10rem, 16vw, 15rem);
+
+  background: rgba(255,255,255,0.8);
+  border-radius: 30px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+
+  border: 1px solid rgba(255,255,255,0.3);
+}
+
+.hackCard:hover {
+  transform: scale(1.04);
+}
+
+.hackCard h3 {
+  color: #333;
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+}
+
+@media (max-width: 1024px) {
+  .grid {.page {
+  padding: 40px;
+  background: #0d0d0f;
+  min-height: 100vh;
+  font-family: "JetBrains Mono", monospace;
+  color: #e6e6e6;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #b47bff;
+  margin-bottom: 25px;
+  letter-spacing: 0.5px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 220px);
+  gap: 20px;
+}
+
+.createCard,
+.hackCard {
+  background: #151518;
+  border: 1px solid #26262e;
+  border-radius: 6px;
+  height: 150px;
+  padding: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+.createCard:hover,
+.hackCard:hover {
+  border-color: #7f3bff;
+  box-shadow: 0 0 12px rgba(127, 59, 255, 0.3);
+}
+
+.plus {
+  font-size: 48px;
+  color: #7f3bff;
+}
+
+.hackCard h3 {
+  font-size: 16px;
+  color: #dcdcff;
+  margin-bottom: 6px;
+}
+
+.hackCard p {
+  font-size: 12px;
+  color: #888;
+}
+
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2.5rem;
+    justify-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(1, 1fr);
+    gap: 2rem;
+    justify-items: center;
+  }
+
+
+  .createCard,
+  .hackCard {
+    width: 90%;
+    height: 11rem;
+  }
+
+  .title {
+    font-size: 2.8rem;
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid {
+    gap: 2rem;
+  }
+
+  .createCard,
+  .hackCard {
+    width: 100%;
+    height: 10rem;
+  }
+
+  .plus {
+    font-size: 3.5rem;
+  }
+
+  .hackCard h3 {
+    font-size: 1.3rem;
+  }
+}

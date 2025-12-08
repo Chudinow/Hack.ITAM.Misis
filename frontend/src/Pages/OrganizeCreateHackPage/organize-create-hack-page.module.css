@@ -1,0 +1,81 @@
+.page {
+  background: #0d0d0f;
+  min-height: 100vh;
+  padding: 40px;
+  color: #e6e6e6;
+  font-family: "JetBrains Mono", monospace;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #b47bff;
+  margin-bottom: 20px;
+}
+
+.form {
+  display: flex;
+  gap: 40px;
+}
+
+.left, .right {
+  flex: 1;
+}
+
+label {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 5px;
+  display: block;
+}
+
+input[type="text"],
+input[type="date"],
+textarea {
+  width: 100%;
+  padding: 10px;
+
+  background: #1b1b1f;
+  border: 1px solid #2c2c34;
+  color: #e6e6e6;
+
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-family: inherit;
+
+  transition: border 0.2s ease;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #7f3bff;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 160px;
+}
+
+.save {
+  width: 100%;
+  padding: 12px;
+  background: #7f3bff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+
+  transition: background 0.2s ease;
+}
+
+.save:hover {
+  background: #8e4aff;
+}
+
+.loading {
+  color: #aaa;
+  font-size: 14px;
+}

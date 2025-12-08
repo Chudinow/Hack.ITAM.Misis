@@ -21,8 +21,8 @@ const OrganizeAuthPage: React.FC = () => {
 
     try {
       const response = await OrganizerApi.login({
-        email: login,
-        password: password,
+        login,
+        password,
       });
 
       if (response?.access_token) {

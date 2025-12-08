@@ -31,12 +31,15 @@ async def send_team_invite(
 
     team = await crud.get_team_by_id(db_session, team_id)
     participant = await crud.get_participant_by_id(db_session, participant_id)
+    captain = await crud.get_team_creator(db_session, team_id)
+    captain_username = f"@{captain.telegram_username}" if captain and captain.telegram_username else None
 
     from bot import bot
 
     await bot.send_message(
         participant.profile.user.telegram_id,
-        f"Вы приглащшены в команду {team.name}",
+        f"Вы приглашены в команду {team.name}"
+        + (f" (капитан {captain_username})" if captain_username else ""),
         reply_markup=invite_keyboard(invite.id),
     )
     return True, "Приглашение отправлено."
@@ -59,7 +62,7 @@ async def send_join_request(
 
     await bot.send_message(
         creator.telegram_id,
-        f"К вам в {team.name} хочет {participant.profile.user.name}",
+        f"К вам в {team.name} хочет присоединиться {participant.profile.user.name} (@{participant.profile.user.telegram_username})",
         reply_markup=invite_keyboard(invite.id),
     )
     return True, "Заявка отправлена."

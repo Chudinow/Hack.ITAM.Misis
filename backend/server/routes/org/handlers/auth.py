@@ -11,7 +11,6 @@ from dependencies import (
     get_password_hash,
     verify_password,
 )
-
 from ..schemas.hackathon import ErrorResponse
 from ..schemas.organizer import OrganizerLogin, OrganizerResponse, Token
 
@@ -134,8 +133,7 @@ async def get_current_user(
     current_organizer: OrganizerModel = Depends(get_current_organizer_cookie),
 ):
     return OrganizerResponse(
-        id=current_organizer.id,
-        login=current_organizer.login,
+        id=current_organizer.id, login=current_organizer.login,
     )
 
 

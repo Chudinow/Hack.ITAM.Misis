@@ -3,12 +3,10 @@ import shutil
 import uuid
 from datetime import date
 from typing import List, Optional
-
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from fastapi.responses import FileResponse
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from db import get_session
 from db.crud import get_hack_by_id
 from db.models import HackathonModel, OrganizerModel

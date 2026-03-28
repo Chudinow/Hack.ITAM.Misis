@@ -34,6 +34,7 @@
 ### Локально
 
 **Backend**
+
 ```bash
 cd backend
 python -m venv venv
@@ -41,6 +42,7 @@ source venv/bin/activate   # или venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env       # заполните переменные окружения
 uvicorn server.main:app --reload --port 8000
+```
 
 **Frontend**
 
@@ -48,7 +50,13 @@ uvicorn server.main:app --reload --port 8000
 cd frontend
 npm install
 npm start
-Через Docker
-bash
+```
+
+### Через Docker
+
+```bash
 docker-compose up --build
+```
+
 Документация API (Swagger) после запуска доступна по адресу: http://localhost:8000/docs
+```

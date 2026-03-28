@@ -5,7 +5,7 @@
 ## Технологический стек
 
 - **Backend**: Python 3.11+, FastAPI, SQLAlchemy (async), Pydantic, JWT, PostgreSQL
-- **Frontend**: React, TypeScript, CSS
+- **Frontend**: TypeScript, CSS
 - **Инфраструктура**: Docker, docker-compose
 
 ## Структура проекта
